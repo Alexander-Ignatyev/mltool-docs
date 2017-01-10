@@ -9,6 +9,14 @@
 @version 0.1.0.0
 
 
+-- | Randon generation uitility functions.
+module MachineLearning.Random
+
+-- | Samples <tt>n</tt> (given as a second parameter) values from
+--   <tt>list</tt> (given as a third parameter).
+sample :: RandomGen t => t -> Int -> [a] -> ([a], t)
+
+
 -- | Common type definitions used in all modules.
 module Types
 
