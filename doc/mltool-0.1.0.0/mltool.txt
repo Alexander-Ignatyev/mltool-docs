@@ -14,7 +14,11 @@ module MachineLearning.Random
 
 -- | Samples <tt>n</tt> (given as a second parameter) values from
 --   <tt>list</tt> (given as a third parameter).
-sample :: RandomGen t => t -> Int -> [a] -> ([a], t)
+sample :: (RandomGen g, Show a) => g -> Int -> Vector a -> (Vector a, g)
+
+-- | Samples <tt>n</tt> (given as a second parameter) values from
+--   <tt>list</tt> (given as a third parameter) inside RandomMonad.
+sampleM :: (RandomGen g, Show a) => Int -> Vector a -> Rand g (Vector a)
 
 
 -- | Common type definitions used in all modules.
@@ -236,6 +240,18 @@ getDimReducer :: Matrix -> Int -> (Matrix -> Matrix, R, Matrix)
 -- | Gets dimensionality reduction function, retained number of dimensions
 --   and reduced X for given matrix X and variance to retain (0..1].
 getDimReducer_rv :: Matrix -> R -> (Matrix -> Matrix, Int, Matrix)
+
+
+-- | Cluster Analysis a.k.a. Clustering - grouping data into coherent
+--   subsets.
+module MachineLearning.Clustering
+
+-- | Cluster type (list of samples associtaed with the cluster).
+type Cluster = Vector Vector
+
+-- | Clusters data using K-Means Algorithm. Runs K-Means algorithm
+--   <tt>N</tt> times, returns the clustering with smaller cost.
+kmeans :: RandomGen g => Int -> Matrix -> Int -> g -> (Vector Cluster, g)
 
 
 -- | Learn function with progress bar for terminal.
