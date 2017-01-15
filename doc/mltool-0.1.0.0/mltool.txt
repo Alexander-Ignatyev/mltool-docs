@@ -9,18 +9,6 @@
 @version 0.1.0.0
 
 
--- | Randon generation uitility functions.
-module MachineLearning.Random
-
--- | Samples <tt>n</tt> (given as a second parameter) values from
---   <tt>list</tt> (given as a third parameter).
-sample :: (RandomGen g, Show a) => g -> Int -> Vector a -> (Vector a, g)
-
--- | Samples <tt>n</tt> (given as a second parameter) values from
---   <tt>list</tt> (given as a third parameter) inside RandomMonad.
-sampleM :: (RandomGen g, Show a) => Int -> Vector a -> Rand g (Vector a)
-
-
 -- | Common type definitions used in all modules.
 module Types
 
@@ -179,6 +167,30 @@ learnBinary :: MinimizeMethod -> R -> Int -> R -> Matrix -> Vector -> Vector -> 
 learnMulti :: MinimizeMethod -> R -> Int -> R -> Matrix -> [Vector] -> [Vector] -> ([Vector], [Matrix])
 
 
+-- | Randon generation uitility functions.
+module MachineLearning.Random
+
+-- | Samples <tt>n</tt> (given as a second parameter) values from
+--   <tt>list</tt> (given as a third parameter).
+sample :: RandomGen g => g -> Int -> Vector a -> (Vector a, g)
+
+-- | Samples <tt>n</tt> (given as a second parameter) values from
+--   <tt>list</tt> (given as a third parameter) inside RandomMonad.
+sampleM :: RandomGen g => Int -> Vector a -> Rand g (Vector a)
+
+-- | Returns a list of random values distributed in a closed interval
+--   <tt>range</tt>
+getRandomRListM :: (RandomGen g, Random a) => Int -> (a, a) -> Rand g [a]
+
+-- | Returns a vector of random values distributed in a closed interval
+--   <tt>range</tt>
+getRandomRVectorM :: RandomGen g => Int -> (R, R) -> Rand g Vector
+
+-- | Returns a matrix of random values distributed in a closed interval
+--   <tt>range</tt>
+getRandomRMatrixM :: RandomGen g => Int -> Int -> (R, R) -> Rand g Matrix
+
+
 -- | Simple Neural Networks.
 module MachineLearning.NeuralNetwork
 
@@ -197,8 +209,17 @@ data Topology
 makeTopology :: Int -> Int -> [Int] -> Topology
 
 -- | Create and initialize weights vector with random values for given
---   neural network topology.
-initializeTheta :: Topology -> IO Vector
+--   neural network topology. Takes a seed to initialize generator of
+--   random numbers as a first parameter.
+initializeTheta :: Int -> Topology -> Vector
+
+-- | Create and initialize weights vector with random values for given
+--   neural network topology inside IO Monad.
+initializeThetaIO :: Topology -> IO Vector
+
+-- | Create and initialize weights vector with random values for given
+--   neural network topology inside RandomMonad.
+initializeThetaM :: RandomGen g => Topology -> Rand g Vector
 
 -- | Calculate output for given input matrix (X) and list of weight vector
 --   (theta). Returns vector of predicted class indices (assuming class
@@ -222,9 +243,13 @@ unflatten :: Topology -> Vector -> [Matrix]
 --   topology
 getThetaSizes :: Topology -> [(Int, Int)]
 
+-- | Return sum of dimensions of weight matrices for given neural network
+--   topology.
+getThetaTotalSize :: Topology -> Int
+
 -- | Create and initialize list of weights matrices with random values for
 --   given neural network topology.
-initializeThetaList :: Topology -> IO [Matrix]
+initializeThetaListM :: RandomGen g => Topology -> Rand g [Matrix]
 instance MachineLearning.Regression.Model.Model MachineLearning.NeuralNetwork.NeuralNetworkModel
 
 
