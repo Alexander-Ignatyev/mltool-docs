@@ -269,9 +269,10 @@ module MachineLearning.Clustering
 -- | Cluster type (list of samples associtaed with the cluster).
 type Cluster = Vector Vector
 
--- | Clusters data using K-Means Algorithm. Runs K-Means algorithm
---   <tt>N</tt> times, returns the clustering with smaller cost.
-kmeans :: RandomGen g => Int -> Matrix -> Int -> g -> (Vector Cluster, g)
+-- | Clusters data using K-Means Algorithm inside Random Monad. Runs
+--   K-Means algorithm <tt>N</tt> times, returns the clustering with
+--   smaller cost.
+kmeans :: RandomGen g => Int -> Matrix -> Int -> Rand g (Vector Cluster)
 
 
 -- | Learn function with progress bar for terminal.
