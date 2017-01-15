@@ -221,11 +221,6 @@ initializeThetaIO :: Topology -> IO Vector
 --   neural network topology inside RandomMonad.
 initializeThetaM :: RandomGen g => Topology -> Rand g Vector
 
--- | Calculate output for given input matrix (X) and list of weight vector
---   (theta). Returns vector of predicted class indices (assuming class
---   indices starts at 0).
-predictMulti :: Topology -> Matrix -> Vector -> Vector
-
 -- | Calculates accuracy of Classification predictions. Takes vector
 --   expected y and vector predicted y. Returns number from 0 to 1, the
 --   closer to 1 the better accuracy. Suitable for both Classification
