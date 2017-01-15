@@ -274,6 +274,9 @@ type Cluster = Vector Vector
 --   smaller cost.
 kmeans :: RandomGen g => Int -> Matrix -> Int -> Rand g (Vector Cluster)
 
+-- | Run K-Means algorithm once inside Random Monad.
+kmeansIterM :: RandomGen g => Vector Vector -> Int -> Int -> Rand g (Vector Cluster, [R])
+
 
 -- | Learn function with progress bar for terminal.
 module MachineLearning.TerminalProgress
