@@ -1,0 +1,32 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-comment">{-|
+Module: MachineLearning.Types
+Description: Common Types
+Copyright: (c) Alexander Ignatyev, 2016
+License: BSD-3
+Stability: experimental
+Portability: POSIX
+
+Common type definitions used in all modules.
+-}</span><span>
+</span><a name="line-11"></a><span>
+</span><a name="line-12"></a><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">MachineLearning</span><span class="hs-operator">.</span><span class="hs-identifier">Types</span><span>
+</span><a name="line-13"></a><span class="hs-special">(</span><span>
+</span><a name="line-14"></a><span>    </span><a href="MachineLearning.Types.html#R"><span class="hs-identifier hs-type">R</span></a><span>
+</span><a name="line-15"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="MachineLearning.Types.html#Vector"><span class="hs-identifier hs-type">Vector</span></a><span>
+</span><a name="line-16"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="MachineLearning.Types.html#Matrix"><span class="hs-identifier hs-type">Matrix</span></a><span>
+</span><a name="line-17"></a><span class="hs-special">)</span><span>
+</span><a name="line-18"></a><span>
+</span><a name="line-19"></a><span class="hs-keyword">where</span><span>
+</span><a name="line-20"></a><span>
+</span><a name="line-21"></a><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-identifier">Numeric</span><span class="hs-operator">.</span><span class="hs-identifier">LinearAlgebra</span><span class="hs-operator">.</span><span class="hs-identifier">Data</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">LAD</span><span>
+</span><a name="line-22"></a><span>
+</span><a name="line-23"></a><span class="hs-comment">-- | Scalar Type (Double)</span><span>
+</span><a name="line-24"></a><span class="hs-keyword">type</span><span> </span><a name="R"><a href="MachineLearning.Types.html#R"><span class="hs-identifier">R</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-type">LAD</span><span class="hs-operator hs-type">.</span><span class="hs-identifier hs-type">R</span><span>
+</span><a name="line-25"></a><span>
+</span><a name="line-26"></a><span class="hs-comment">-- | Vector Types (of Doubles)</span><span>
+</span><a name="line-27"></a><span class="hs-keyword">type</span><span> </span><a name="Vector"><a href="MachineLearning.Types.html#Vector"><span class="hs-identifier">Vector</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-type">LAD</span><span class="hs-operator hs-type">.</span><span class="hs-identifier hs-type">Vector</span><span> </span><a href="MachineLearning.Types.html#R"><span class="hs-identifier hs-type">R</span></a><span>
+</span><a name="line-28"></a><span>
+</span><a name="line-29"></a><span class="hs-comment">-- | Matrix Types (of Doubles)</span><span>
+</span><a name="line-30"></a><span class="hs-keyword">type</span><span> </span><a name="Matrix"><a href="MachineLearning.Types.html#Matrix"><span class="hs-identifier">Matrix</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-type">LAD</span><span class="hs-operator hs-type">.</span><span class="hs-identifier hs-type">Matrix</span><span> </span><a href="MachineLearning.Types.html#R"><span class="hs-identifier hs-type">R</span></a><span>
+</span><a name="line-31"></a><span>
+</span><a name="line-32"></a></pre></body></html>
