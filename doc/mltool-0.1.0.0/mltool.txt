@@ -96,6 +96,41 @@ checkGradient :: Model a => a -> R -> Matrix -> Vector -> Vector -> R -> R
 
 
 module MachineLearning.Regression
+class Model a
+
+-- | Hypothesis function. Takes X (m x n) and theta (n x 1), returns y (m x
+--   1).
+hypothesis :: Model a => a -> Matrix -> Vector -> Vector
+
+-- | Cost function J(Theta) It takes regularizarion parameter lambda,
+--   matrix X (m x n), vector y (m x 1) and vector theta (n x 1).
+cost :: Model a => a -> R -> Matrix -> Vector -> Vector -> R
+
+-- | Gradient function. It takes regularizarion parameter lambda, X (m x
+--   n), y (m x 1) and theta (n x 1). Returns vector of gradients (n x 1).
+gradient :: Model a => a -> R -> Matrix -> Vector -> Vector -> Vector
+data LeastSquaresModel
+LeastSquares :: LeastSquaresModel
+data MinimizeMethod
+
+-- | Gradient descent, takes alpha. Requires feature normalization.
+GradientDescent :: R -> MinimizeMethod
+
+-- | Fletcher-Reeves conjugate gradient algorithm, takes size of first
+--   trial step (0.1 is fine) and tol (0.1 is fine).
+ConjugateGradientFR :: R -> R -> MinimizeMethod
+
+-- | Polak-Ribiere conjugate gradient algorithm. takes size of first trial
+--   step (0.1 is fine) and tol (0.1 is fine).
+ConjugateGradientPR :: R -> R -> MinimizeMethod
+
+-- | Broyden-Fletcher-Goldfarb-Shanno (BFGS) algorithm, takes size of first
+--   trial step (0.1 is fine) and tol (0.1 is fine).
+BFGS2 :: R -> R -> MinimizeMethod
+
+-- | Returns solution vector (theta) and optimization path. Optimization
+--   path's row format: [iter number, cost function value, theta values...]
+minimize :: Model a => MinimizeMethod -> a -> R -> Int -> R -> Matrix -> Vector -> Vector -> (Vector, Matrix)
 
 
 -- | Binary and Multiclass Classification.
