@@ -134,6 +134,14 @@ BFGS2 :: R -> R -> MinimizeMethod
 --   path's row format: [iter number, cost function value, theta values...]
 minimize :: Model a => MinimizeMethod -> a -> R -> Int -> R -> Matrix -> Vector -> Vector -> (Vector, Matrix)
 
+-- | Normal equation using inverse, does not require feature normalization
+--   It takes X and y, returns theta.
+normalEquation :: Matrix -> Vector -> Vector
+
+-- | Normal equation using pseudo inverse, requires feature normalization
+--   It takes X and y, returns theta.
+normalEquation_p :: Matrix -> Vector -> Vector
+
 
 -- | Binary and Multiclass Classification.
 module MachineLearning.Classification
@@ -241,16 +249,11 @@ learnMultiWithProgressBar :: (Vector -> Vector -> (Vector, Matrix)) -> [Vector] 
 
 module MachineLearning
 
--- | Normal equation using inverse, does not require feature normalization
---   It takes X and y, returns theta.
-normalEquation :: Matrix -> Vector -> Vector
+-- | Add biad dimension to the future matrix
+addBiasDimension :: Matrix -> Matrix
 
--- | Normal equation using pseudo inverse, requires feature normalization
---   It takes X and y, returns theta.
-normalEquation_p :: Matrix -> Vector -> Vector
-
--- | Add column of ones to feature matrix.
-addColumnOfOnes :: Matrix -> Matrix
+-- | Remove biad dimension
+removeBiasDimension :: Matrix -> Matrix
 
 -- | Caclulates mean and stddev values of every feature. Takes feature
 --   matrix X, returns pair of vectors of means and stddevs.
