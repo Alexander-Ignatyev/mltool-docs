@@ -143,8 +143,8 @@ normalEquation :: Matrix -> Vector -> Vector
 normalEquation_p :: Matrix -> Vector -> Vector
 
 
--- | Binary and Multiclass Classification.
-module MachineLearning.Classification
+-- | Binary Classification.
+module MachineLearning.Classification.Binary
 data MinimizeMethod
 
 -- | Gradient descent, takes alpha. Requires feature normalization.
@@ -164,12 +164,10 @@ BFGS2 :: R -> R -> MinimizeMethod
 
 -- | Binary Classification prediction function. Takes a matrix of features
 --   X and a vector theta. Returns predicted class.
-predictBinary :: Matrix -> Vector -> Vector
+predict :: Matrix -> Vector -> Vector
 
--- | Multiclass Classification prediction function. Takes a matrix of
---   features X and a list of vectors theta, returns predicted class number
---   assuming that class numbers start at 0.
-predictMulti :: Matrix -> [Vector] -> Vector
+-- | Learns Binary Classification.
+learn :: MinimizeMethod -> R -> Int -> R -> Matrix -> Vector -> Vector -> (Vector, Matrix)
 
 -- | Calculates accuracy of Classification predictions. Takes vector
 --   expected y and vector predicted y. Returns number from 0 to 1, the
@@ -177,17 +175,39 @@ predictMulti :: Matrix -> [Vector] -> Vector
 --   Types: Binary and Multiclass.
 calcAccuracy :: Vector -> Vector -> R
 
--- | Process outputs for Multiclass Classification. Takes number of labels
---   and output vector y. Returns list of vectors of binary outputs
---   (One-vs-All Classification). It is supposed that labels are integerets
---   start at 0.
-processOutputMulti :: Int -> Vector -> [Vector]
 
--- | Learns Binary Classification.
-learnBinary :: MinimizeMethod -> R -> Int -> R -> Matrix -> Vector -> Vector -> (Vector, Matrix)
+-- | One-vs-All Classification.
+module MachineLearning.Classification.OneVsAll
+data MinimizeMethod
 
--- | Learns Multiclass Classification
-learnMulti :: MinimizeMethod -> R -> Int -> R -> Matrix -> [Vector] -> [Vector] -> ([Vector], [Matrix])
+-- | Gradient descent, takes alpha. Requires feature normalization.
+GradientDescent :: R -> MinimizeMethod
+
+-- | Fletcher-Reeves conjugate gradient algorithm, takes size of first
+--   trial step (0.1 is fine) and tol (0.1 is fine).
+ConjugateGradientFR :: R -> R -> MinimizeMethod
+
+-- | Polak-Ribiere conjugate gradient algorithm. takes size of first trial
+--   step (0.1 is fine) and tol (0.1 is fine).
+ConjugateGradientPR :: R -> R -> MinimizeMethod
+
+-- | Broyden-Fletcher-Goldfarb-Shanno (BFGS) algorithm, takes size of first
+--   trial step (0.1 is fine) and tol (0.1 is fine).
+BFGS2 :: R -> R -> MinimizeMethod
+
+-- | One-vs-All Classification prediction function. Takes a matrix of
+--   features X and a list of vectors theta, returns predicted class number
+--   assuming that class numbers start at 0.
+predict :: Matrix -> [Vector] -> Vector
+
+-- | Learns One-vs-All Classification
+learn :: MinimizeMethod -> R -> Int -> R -> Int -> Matrix -> Vector -> [Vector] -> ([Vector], [Matrix])
+
+-- | Calculates accuracy of Classification predictions. Takes vector
+--   expected y and vector predicted y. Returns number from 0 to 1, the
+--   closer to 1 the better accuracy. Suitable for both Classification
+--   Types: Binary and Multiclass.
+calcAccuracy :: Vector -> Vector -> R
 
 
 -- | Randon generation uitility functions.
@@ -236,15 +256,15 @@ module MachineLearning.TerminalProgress
 -- | Learn the given function displaying progress bar in terminal. It takes
 --   function, initial theta and number of iterations to call the function.
 --   It returns theta and optimization path (see
---   <a>MachineLearning.Regression</a> for details).
+--   <a>MachineLearning.Optimization</a> for details).
 learnWithProgressBar :: (Vector -> (Vector, Matrix)) -> Vector -> Int -> IO (Vector, Matrix)
 
 -- | Learn the given function displaying progress bar in terminal. It takes
 --   function, list of outputs and list of initial thetas and number of
 --   iterations to call the function. It returns list of thetas and list of
---   optimization paths (see <a>MachineLearning.Regression</a> for
+--   optimization paths (see <a>MachineLearning.Optimization</a> for
 --   details).
-learnMultiWithProgressBar :: (Vector -> Vector -> (Vector, Matrix)) -> [Vector] -> [Vector] -> Int -> IO ([Vector], [Matrix])
+learnOneVsAllWithProgressBar :: (Vector -> Vector -> (Vector, Matrix)) -> Vector -> [Vector] -> Int -> IO ([Vector], [Matrix])
 
 
 module MachineLearning
