@@ -288,6 +288,16 @@ mapFeatures :: Int -> Matrix -> Matrix
 splitToXY :: Element t => Matrix t -> (Matrix t, Vector t)
 
 
+-- | Multicalss Support Vector Machines Model.
+module MachineLearning.MultiSvmModel
+
+-- | Multiclass SVM Model, takes delta and number of futures. Delta = 1.0
+--   is good for all cases.
+data MultiSvmModel
+MultiSvm :: R -> Int -> MultiSvmModel
+instance MachineLearning.Model.Model MachineLearning.MultiSvmModel.MultiSvmModel
+
+
 -- | Simple Neural Networks.
 module MachineLearning.NeuralNetwork
 class Model a
