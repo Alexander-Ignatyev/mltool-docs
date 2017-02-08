@@ -298,6 +298,15 @@ MultiSvm :: R -> Int -> MultiSvmModel
 instance MachineLearning.Model.Model MachineLearning.MultiSvmModel.MultiSvmModel
 
 
+-- | Softmax Model (Multiclass Logistic Regression).
+module MachineLearning.SoftmaxModel
+
+-- | Softmax Model, takes number of futures.
+data SoftmaxModel
+Softmax :: Int -> SoftmaxModel
+instance MachineLearning.Model.Model MachineLearning.SoftmaxModel.SoftmaxModel
+
+
 -- | Simple Neural Networks.
 module MachineLearning.NeuralNetwork
 class Model a
