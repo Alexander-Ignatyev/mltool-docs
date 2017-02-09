@@ -65,12 +65,23 @@ module MachineLearning.Optimization.GradientDescent
 gradientDescent :: Model a => R -> a -> R -> Int -> R -> Matrix -> Vector -> Vector -> (Vector, Matrix)
 
 
+-- | Minibatch Gradient Descent
+module MachineLearning.Optimization.MinibatchGradientDescent
+
+-- | Minibatch Gradient Descent method implementation. See
+--   <a>MachineLearning.Regression</a> for usage details.
+minibatchGradientDescent :: Model a => Int -> Int -> R -> a -> R -> Int -> R -> Matrix -> Vector -> Vector -> (Vector, Matrix)
+
+
 -- | Optimization module.
 module MachineLearning.Optimization
 data MinimizeMethod
 
 -- | Gradient descent, takes alpha. Requires feature normalization.
 GradientDescent :: R -> MinimizeMethod
+
+-- | Minibacth Gradietn Descent, takes seed, batch size and alpha
+MinibatchGradientDescent :: Int -> Int -> R -> MinimizeMethod
 
 -- | Fletcher-Reeves conjugate gradient algorithm, takes size of first
 --   trial step (0.1 is fine) and tol (0.1 is fine).
@@ -118,6 +129,9 @@ data MinimizeMethod
 -- | Gradient descent, takes alpha. Requires feature normalization.
 GradientDescent :: R -> MinimizeMethod
 
+-- | Minibacth Gradietn Descent, takes seed, batch size and alpha
+MinibatchGradientDescent :: Int -> Int -> R -> MinimizeMethod
+
 -- | Fletcher-Reeves conjugate gradient algorithm, takes size of first
 --   trial step (0.1 is fine) and tol (0.1 is fine).
 ConjugateGradientFR :: R -> R -> MinimizeMethod
@@ -149,6 +163,9 @@ data MinimizeMethod
 
 -- | Gradient descent, takes alpha. Requires feature normalization.
 GradientDescent :: R -> MinimizeMethod
+
+-- | Minibacth Gradietn Descent, takes seed, batch size and alpha
+MinibatchGradientDescent :: Int -> Int -> R -> MinimizeMethod
 
 -- | Fletcher-Reeves conjugate gradient algorithm, takes size of first
 --   trial step (0.1 is fine) and tol (0.1 is fine).
@@ -182,6 +199,9 @@ data MinimizeMethod
 
 -- | Gradient descent, takes alpha. Requires feature normalization.
 GradientDescent :: R -> MinimizeMethod
+
+-- | Minibacth Gradietn Descent, takes seed, batch size and alpha
+MinibatchGradientDescent :: Int -> Int -> R -> MinimizeMethod
 
 -- | Fletcher-Reeves conjugate gradient algorithm, takes size of first
 --   trial step (0.1 is fine) and tol (0.1 is fine).
