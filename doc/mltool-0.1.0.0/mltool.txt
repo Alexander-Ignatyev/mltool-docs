@@ -157,6 +157,42 @@ normalEquation :: Matrix -> Vector -> Vector
 normalEquation_p :: Matrix -> Vector -> Vector
 
 
+-- | MultiClass Classification.
+module MachineLearning.Classification.MultiClass
+
+-- | Classifier type class represents Multi-class classification models.
+class Classifier a
+
+-- | Score function
+cscore :: Classifier a => a -> Matrix -> Matrix -> Matrix
+
+-- | Hypothesis function Takes X (m x n) and theta (n x k), returns y (m x
+--   k).
+chypothesis :: Classifier a => a -> Matrix -> Matrix -> Vector
+
+-- | Cost function J(Theta), a.k.a. loss function. It takes regularizarion
+--   parameter lambda, matrix X (m x n), vector y (m x 1) and vector theta
+--   (n x 1).
+ccost :: Classifier a => a -> R -> Matrix -> Vector -> Matrix -> R
+
+-- | Gradient function. It takes regularizarion parameter lambda, X (m x
+--   n), y (m x 1) and theta (n x 1). Returns vector of gradients (n x 1).
+cgradient :: Classifier a => a -> R -> Matrix -> Vector -> Matrix -> Matrix
+
+-- | Returns Number of Classes
+cnumClasses :: Classifier a => a -> Int
+
+-- | MultiClassModel is Model wrapper class around Classifier
+data MultiClassModel m
+MultiClass :: m -> MultiClassModel m
+
+-- | Process outputs for MultiClass Classification. Takes Classifier and
+--   output vector y. Returns matrix of binary outputs. It is supposed that
+--   labels are integerets start at 0.
+processOutput :: (Classifier c) => c -> Vector -> Matrix
+instance MachineLearning.Classification.MultiClass.Classifier a => MachineLearning.Model.Model (MachineLearning.Classification.MultiClass.MultiClassModel a)
+
+
 -- | Binary Classification.
 module MachineLearning.Classification.Binary
 data MinimizeMethod
@@ -308,23 +344,23 @@ mapFeatures :: Int -> Matrix -> Matrix
 splitToXY :: Element t => Matrix t -> (Matrix t, Vector t)
 
 
--- | Multicalss Support Vector Machines Model.
-module MachineLearning.MultiSvmModel
+-- | Multicalss Support Vector Machines Classifier.
+module MachineLearning.MultiSvmClassifier
 
--- | Multiclass SVM Model, takes delta and number of futures. Delta = 1.0
---   is good for all cases.
+-- | Multiclass SVM Classifier, takes delta and number of futures. Delta =
+--   1.0 is good for all cases.
 data MultiSvmModel
 MultiSvm :: R -> Int -> MultiSvmModel
-instance MachineLearning.Model.Model MachineLearning.MultiSvmModel.MultiSvmModel
+instance MachineLearning.Classification.MultiClass.Classifier MachineLearning.MultiSvmClassifier.MultiSvmModel
 
 
--- | Softmax Model (Multiclass Logistic Regression).
-module MachineLearning.SoftmaxModel
+-- | Softmax Classifier (Multiclass Logistic Regression).
+module MachineLearning.SoftmaxClassifier
 
--- | Softmax Model, takes number of futures.
-data SoftmaxModel
-Softmax :: Int -> SoftmaxModel
-instance MachineLearning.Model.Model MachineLearning.SoftmaxModel.SoftmaxModel
+-- | Softmax Classifier, takes number of classes.
+data SoftmaxClassifier
+Softmax :: Int -> SoftmaxClassifier
+instance MachineLearning.Classification.MultiClass.Classifier MachineLearning.SoftmaxClassifier.SoftmaxClassifier
 
 
 -- | Simple Neural Networks.
