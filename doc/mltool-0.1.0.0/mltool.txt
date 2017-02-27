@@ -420,14 +420,6 @@ flatten :: [Matrix] -> Vector
 --   topology.
 unflatten :: Topology -> Vector -> [Matrix]
 
--- | Returns dimensions of weight matrices for given neural network
---   topology
-getThetaSizes :: Topology -> [(Int, Int)]
-
--- | Return sum of dimensions of weight matrices for given neural network
---   topology.
-getThetaTotalSize :: Topology -> Int
-
 -- | Create and initialize list of weights matrices with random values for
 --   given neural network topology.
 initializeThetaListM :: RandomGen g => Topology -> Rand g [Matrix]
