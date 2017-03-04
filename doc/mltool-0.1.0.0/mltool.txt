@@ -414,15 +414,15 @@ initializeThetaM :: RandomGen g => Topology -> Rand g Vector
 calcAccuracy :: Vector -> Vector -> R
 
 -- | Flatten list of matrices into vector.
-flatten :: [Matrix] -> Vector
+flatten :: [(Matrix, Matrix)] -> Vector
 
 -- | Unflatten vector into list of matrices for given neural network
 --   topology.
-unflatten :: Topology -> Vector -> [Matrix]
+unflatten :: Topology -> Vector -> [(Matrix, Matrix)]
 
 -- | Create and initialize list of weights matrices with random values for
 --   given neural network topology.
-initializeThetaListM :: RandomGen g => Topology -> Rand g [Matrix]
+initializeThetaListM :: RandomGen g => Topology -> Rand g [(Matrix, Matrix)]
 instance MachineLearning.Model.Model MachineLearning.NeuralNetwork.NeuralNetworkModel
 
 
