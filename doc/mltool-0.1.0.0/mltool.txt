@@ -266,6 +266,49 @@ learn :: MinimizeMethod -> R -> Int -> R -> Int -> Matrix -> Vector -> [Vector] 
 calcAccuracy :: Vector -> Vector -> R
 
 
+-- | Regularization.
+module MachineLearning.NeuralNetwork.Regularization
+data Regularization
+L2 :: Double -> Regularization
+forwardReg :: Regularization -> [(Matrix, Matrix)] -> R
+backwardReg :: Regularization -> Matrix -> Matrix
+
+
+-- | Neural Network's Layer
+module MachineLearning.NeuralNetwork.Layer
+data Layer
+Layer :: (Matrix -> Matrix -> Matrix -> Matrix) -> (Matrix -> Cache -> (Matrix, Matrix, Matrix)) -> (Matrix -> Matrix) -> (Matrix -> Matrix -> Matrix) -> Layer
+[lForward] :: Layer -> Matrix -> Matrix -> Matrix -> Matrix
+[lBackward] :: Layer -> Matrix -> Cache -> (Matrix, Matrix, Matrix)
+[lActivation] :: Layer -> Matrix -> Matrix
+[lActivationGradient] :: Layer -> Matrix -> Matrix -> Matrix
+data Cache
+Cache :: Matrix -> Matrix -> Matrix -> Matrix -> Cache
+[cacheZ] :: Cache -> Matrix
+[cacheX] :: Cache -> Matrix
+[cacheB] :: Cache -> Matrix
+[cacheW] :: Cache -> Matrix
+affineForward :: Matrix -> Matrix -> Matrix -> Matrix
+affineBackward :: Matrix R -> Cache -> (Matrix R, Matrix, Matrix R)
+
+
+-- | Neural Network's Topology
+module MachineLearning.NeuralNetwork.Topology
+
+-- | Neural network topology has at least 2 elements: numver of input and
+--   number of outputs. And sizes of hidden layers between 2 elements.
+data Topology
+Topology :: [(Int, Int)] -> [Layer] -> LossFunc -> Topology
+loss :: Topology -> Regularization -> Matrix -> [(Matrix, Matrix)] -> Matrix -> R
+propagateForward :: Topology -> Matrix -> [(Matrix, Matrix)] -> (Matrix, [Cache])
+
+-- | Implements backward propagation algorithm.
+propagateBackward :: Topology -> Regularization -> Matrix -> [Cache] -> Matrix -> [(Matrix, Matrix)]
+
+-- | Returns number of outputs of the given topology.
+numberOutputs :: Topology -> Int
+
+
 -- | Randon generation uitility functions.
 module MachineLearning.Random
 
@@ -288,6 +331,27 @@ getRandomRVectorM :: RandomGen g => Int -> (R, R) -> Rand g Vector
 -- | Returns a matrix of random values distributed in a closed interval
 --   <tt>range</tt>
 getRandomRMatrixM :: RandomGen g => Int -> Int -> (R, R) -> Rand g Matrix
+
+
+-- | Sigmoid
+module MachineLearning.NeuralNetwork.Sigmoid
+
+-- | Creates toplogy. Takes number of inputs, number of outputs and list of
+--   hidden layers.
+makeTopology :: Int -> Int -> [Int] -> Topology
+
+-- | Create and initialize weights vector with random values for given
+--   neural network topology. Takes a seed to initialize generator of
+--   random numbers as a first parameter.
+initializeTheta :: Int -> Topology -> Vector
+
+-- | Create and initialize weights vector with random values for given
+--   neural network topology inside IO Monad.
+initializeThetaIO :: Topology -> IO Vector
+
+-- | Create and initialize weights vector with random values for given
+--   neural network topology inside RandomMonad.
+initializeThetaM :: RandomGen g => Topology -> Rand g Vector
 
 
 -- | Cluster Analysis a.k.a. Clustering - grouping data into coherent
@@ -386,26 +450,8 @@ newtype NeuralNetworkModel
 NeuralNetwork :: Topology -> NeuralNetworkModel
 
 -- | Neural network topology has at least 2 elements: numver of input and
---   number of outputs. And sizes of hidden layers between 2 elements. Bias
---   input must not be included.
+--   number of outputs. And sizes of hidden layers between 2 elements.
 data Topology
-
--- | Creates toplogy. Takes number of inputs, number of outputs and list of
---   hidden layers.
-makeTopology :: Int -> Int -> [Int] -> Topology
-
--- | Create and initialize weights vector with random values for given
---   neural network topology. Takes a seed to initialize generator of
---   random numbers as a first parameter.
-initializeTheta :: Int -> Topology -> Vector
-
--- | Create and initialize weights vector with random values for given
---   neural network topology inside IO Monad.
-initializeThetaIO :: Topology -> IO Vector
-
--- | Create and initialize weights vector with random values for given
---   neural network topology inside RandomMonad.
-initializeThetaM :: RandomGen g => Topology -> Rand g Vector
 
 -- | Calculates accuracy of Classification predictions. Takes vector
 --   expected y and vector predicted y. Returns number from 0 to 1, the
@@ -419,10 +465,6 @@ flatten :: [(Matrix, Matrix)] -> Vector
 -- | Unflatten vector into list of matrices for given neural network
 --   topology.
 unflatten :: Topology -> Vector -> [(Matrix, Matrix)]
-
--- | Create and initialize list of weights matrices with random values for
---   given neural network topology.
-initializeThetaListM :: RandomGen g => Topology -> Rand g [(Matrix, Matrix)]
 instance MachineLearning.Model.Model MachineLearning.NeuralNetwork.NeuralNetworkModel
 
 
