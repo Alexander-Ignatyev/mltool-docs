@@ -402,6 +402,29 @@ initializeThetaM :: RandomGen g => Topology -> Rand g Vector
 instance MachineLearning.Model.Model MachineLearning.NeuralNetwork.NeuralNetworkModel
 
 
+-- | ReLu Activation.
+module MachineLearning.NeuralNetwork.ReluActivation
+relu :: Matrix -> Matrix
+gradient :: Matrix -> Matrix -> Matrix
+
+
+-- | Softmax Loss.
+module MachineLearning.NeuralNetwork.SoftmaxLoss
+scores :: Matrix R -> Matrix R
+gradient :: Matrix R -> Matrix R -> Matrix R
+loss :: Matrix -> [(Matrix, Matrix)] -> Matrix -> R
+
+
+-- | Sigmoid
+module MachineLearning.NeuralNetwork.Sigmoid
+
+-- | Calculates sigmoid
+sigmoid :: Floating a => a -> a
+gradient :: Matrix -> Matrix -> Matrix
+loss :: Matrix -> [(Matrix, Matrix)] -> Matrix -> R
+outputGradient :: Matrix -> Matrix -> Matrix
+
+
 -- | Randon generation uitility functions.
 module MachineLearning.Random
 
@@ -443,12 +466,18 @@ nguyen :: RandomGen g => (Int, Int) -> Rand g (Matrix, Matrix)
 he :: RandomGen g => (Int, Int) -> Rand g (Matrix, Matrix)
 
 
--- | Sigmoid
-module MachineLearning.NeuralNetwork.Sigmoid
+-- | Topology Maker.
+module MachineLearning.NeuralNetwork.TopologyMaker
+data Activation
+ASigmoid :: Activation
+ARelu :: Activation
+data Loss
+LSigmoid :: Loss
+LSoftmax :: Loss
 
 -- | Creates toplogy. Takes number of inputs, number of outputs and list of
 --   hidden layers.
-makeTopology :: Int -> Int -> [Int] -> Topology
+makeTopology :: Activation -> Loss -> Int -> Int -> [Int] -> Topology
 
 
 -- | Cluster Analysis a.k.a. Clustering - grouping data into coherent
