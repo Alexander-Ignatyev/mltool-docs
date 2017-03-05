@@ -426,6 +426,23 @@ getRandomRVectorM :: RandomGen g => Int -> (R, R) -> Rand g Vector
 getRandomRMatrixM :: RandomGen g => Int -> Int -> (R, R) -> Rand g Matrix
 
 
+-- | Various Weight Initialization algorithms.
+module MachineLearning.NeuralNetwork.WeightInitialization
+
+-- | Weight Initialization Algorithm discussed in Nguyen at al.:
+--   <a>https://web.stanford.edu/class/ee373b/nninitialization.pdf</a>
+--   Nguyen, Derrick, Widrow, B. Improving the learning speed of 2-layer
+--   neural networks by choosing initial values of adaptive weights. In
+--   Proc. IJCNN, 1990; 3: 21-26.
+nguyen :: RandomGen g => (Int, Int) -> Rand g (Matrix, Matrix)
+
+-- | Weight Initialization Algorithm discussed in He at al.:
+--   <a>https://arxiv.org/abs/1502.01852</a> Kaiming He, Xiangyu Zhang,
+--   Shaoqing Ren, Jian Sun. Delving Deep into Rectifiers: Surpassing
+--   Human-Level Performance on ImageNet Classification.
+he :: RandomGen g => (Int, Int) -> Rand g (Matrix, Matrix)
+
+
 -- | Sigmoid
 module MachineLearning.NeuralNetwork.Sigmoid
 
