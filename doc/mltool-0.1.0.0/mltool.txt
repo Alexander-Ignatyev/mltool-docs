@@ -277,11 +277,13 @@ backwardReg :: Regularization -> Matrix -> Matrix
 -- | Neural Network's Layer
 module MachineLearning.NeuralNetwork.Layer
 data Layer
-Layer :: (Matrix -> Matrix -> Matrix -> Matrix) -> (Matrix -> Cache -> (Matrix, Matrix, Matrix)) -> (Matrix -> Matrix) -> (Matrix -> Matrix -> Matrix) -> Layer
+Layer :: Int -> (Matrix -> Matrix -> Matrix -> Matrix) -> (Matrix -> Cache -> (Matrix, Matrix, Matrix)) -> (Matrix -> Matrix) -> (Matrix -> Matrix -> Matrix) -> (forall g. RandomGen g => (Int, Int) -> Rand g (Matrix, Matrix)) -> Layer
+[lUnits] :: Layer -> Int
 [lForward] :: Layer -> Matrix -> Matrix -> Matrix -> Matrix
 [lBackward] :: Layer -> Matrix -> Cache -> (Matrix, Matrix, Matrix)
 [lActivation] :: Layer -> Matrix -> Matrix
 [lActivationGradient] :: Layer -> Matrix -> Matrix -> Matrix
+[lInitializeThetaM] :: Layer -> forall g. RandomGen g => (Int, Int) -> Rand g (Matrix, Matrix)
 data Cache
 Cache :: Matrix -> Matrix -> Matrix -> Matrix -> Cache
 [cacheZ] :: Cache -> Matrix
@@ -298,15 +300,46 @@ module MachineLearning.NeuralNetwork.Topology
 -- | Neural network topology has at least 2 elements: numver of input and
 --   number of outputs. And sizes of hidden layers between 2 elements.
 data Topology
-Topology :: [(Int, Int)] -> [Layer] -> LossFunc -> Topology
+
+-- | Loss function's type. Takes x, weights and y.
+type LossFunc = Matrix -> [(Matrix, Matrix)] -> Matrix -> R
+
+-- | Makes Neural Network's Topology. Takes number of inputs, list of
+--   hidden layers, output layer and loss function.
+makeTopology :: Int -> [Layer] -> Layer -> LossFunc -> Topology
+
+-- | Calculates loss for the given topology. Takes topology,
+--   regularization, x, weights, y.
 loss :: Topology -> Regularization -> Matrix -> [(Matrix, Matrix)] -> Matrix -> R
+
+-- | Implementation of forward propagation algorithm.
 propagateForward :: Topology -> Matrix -> [(Matrix, Matrix)] -> (Matrix, [Cache])
 
--- | Implements backward propagation algorithm.
+-- | Implementation of backward propagation algorithm.
 propagateBackward :: Topology -> Regularization -> Matrix -> [Cache] -> Matrix -> [(Matrix, Matrix)]
 
 -- | Returns number of outputs of the given topology.
 numberOutputs :: Topology -> Int
+
+-- | Create and initialize weights vector with random values for given
+--   neural network topology. Takes a seed to initialize generator of
+--   random numbers as a first parameter.
+initializeTheta :: Int -> Topology -> Vector
+
+-- | Create and initialize weights vector with random values for given
+--   neural network topology inside IO Monad.
+initializeThetaIO :: Topology -> IO Vector
+
+-- | Create and initialize weights vector with random values for given
+--   neural network topology inside RandomMonad.
+initializeThetaM :: RandomGen g => Topology -> Rand g Vector
+
+-- | Flatten list of matrices into vector.
+flatten :: [(Matrix, Matrix)] -> Vector
+
+-- | Unflatten vector into list of matrices for given neural network
+--   topology.
+unflatten :: Topology -> Vector -> [(Matrix, Matrix)]
 
 
 -- | Randon generation uitility functions.
@@ -339,19 +372,6 @@ module MachineLearning.NeuralNetwork.Sigmoid
 -- | Creates toplogy. Takes number of inputs, number of outputs and list of
 --   hidden layers.
 makeTopology :: Int -> Int -> [Int] -> Topology
-
--- | Create and initialize weights vector with random values for given
---   neural network topology. Takes a seed to initialize generator of
---   random numbers as a first parameter.
-initializeTheta :: Int -> Topology -> Vector
-
--- | Create and initialize weights vector with random values for given
---   neural network topology inside IO Monad.
-initializeThetaIO :: Topology -> IO Vector
-
--- | Create and initialize weights vector with random values for given
---   neural network topology inside RandomMonad.
-initializeThetaM :: RandomGen g => Topology -> Rand g Vector
 
 
 -- | Cluster Analysis a.k.a. Clustering - grouping data into coherent
@@ -449,22 +469,28 @@ gradient :: Model a => a -> R -> Matrix -> Vector -> Vector -> Vector
 newtype NeuralNetworkModel
 NeuralNetwork :: Topology -> NeuralNetworkModel
 
--- | Neural network topology has at least 2 elements: numver of input and
---   number of outputs. And sizes of hidden layers between 2 elements.
-data Topology
-
 -- | Calculates accuracy of Classification predictions. Takes vector
 --   expected y and vector predicted y. Returns number from 0 to 1, the
 --   closer to 1 the better accuracy. Suitable for both Classification
 --   Types: Binary and Multiclass.
 calcAccuracy :: Vector -> Vector -> R
 
--- | Flatten list of matrices into vector.
-flatten :: [(Matrix, Matrix)] -> Vector
+-- | Neural network topology has at least 2 elements: numver of input and
+--   number of outputs. And sizes of hidden layers between 2 elements.
+data Topology
 
--- | Unflatten vector into list of matrices for given neural network
---   topology.
-unflatten :: Topology -> Vector -> [(Matrix, Matrix)]
+-- | Create and initialize weights vector with random values for given
+--   neural network topology. Takes a seed to initialize generator of
+--   random numbers as a first parameter.
+initializeTheta :: Int -> Topology -> Vector
+
+-- | Create and initialize weights vector with random values for given
+--   neural network topology inside IO Monad.
+initializeThetaIO :: Topology -> IO Vector
+
+-- | Create and initialize weights vector with random values for given
+--   neural network topology inside RandomMonad.
+initializeThetaM :: RandomGen g => Topology -> Rand g Vector
 instance MachineLearning.Model.Model MachineLearning.NeuralNetwork.NeuralNetworkModel
 
 
