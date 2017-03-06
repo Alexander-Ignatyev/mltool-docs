@@ -414,6 +414,13 @@ tanh :: Floating a => a -> a
 gradient :: Matrix -> Matrix -> Matrix
 
 
+-- | Multi SVM Loss.
+module MachineLearning.NeuralNetwork.MultiSvmLoss
+scores :: a -> a
+gradient :: Matrix -> Matrix -> Matrix
+loss :: Matrix -> [(Matrix, Matrix)] -> Matrix -> R
+
+
 -- | Softmax Loss.
 module MachineLearning.NeuralNetwork.SoftmaxLoss
 scores :: Matrix R -> Matrix R
@@ -481,6 +488,7 @@ ATanh :: Activation
 data Loss
 LSigmoid :: Loss
 LSoftmax :: Loss
+LMultiSvm :: Loss
 
 -- | Creates toplogy. Takes number of inputs, number of outputs and list of
 --   hidden layers.
