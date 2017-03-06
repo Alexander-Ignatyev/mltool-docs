@@ -408,6 +408,12 @@ relu :: Matrix -> Matrix
 gradient :: Matrix -> Matrix -> Matrix
 
 
+-- | Tanh Activation.
+module MachineLearning.NeuralNetwork.TanhActivation
+tanh :: Floating a => a -> a
+gradient :: Matrix -> Matrix -> Matrix
+
+
 -- | Softmax Loss.
 module MachineLearning.NeuralNetwork.SoftmaxLoss
 scores :: Matrix R -> Matrix R
@@ -471,6 +477,7 @@ module MachineLearning.NeuralNetwork.TopologyMaker
 data Activation
 ASigmoid :: Activation
 ARelu :: Activation
+ATanh :: Activation
 data Loss
 LSigmoid :: Loss
 LSoftmax :: Loss
