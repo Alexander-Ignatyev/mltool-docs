@@ -646,9 +646,9 @@ module MachineLearning.MultiSvmClassifier
 
 -- | Multiclass SVM Classifier, takes delta and number of futures. Delta =
 --   1.0 is good for all cases.
-data MultiSvmModel
-MultiSvm :: R -> Int -> MultiSvmModel
-instance MachineLearning.Classification.MultiClass.Classifier MachineLearning.MultiSvmClassifier.MultiSvmModel
+data MultiSvmClassifier
+MultiSvm :: R -> Int -> MultiSvmClassifier
+instance MachineLearning.Classification.MultiClass.Classifier MachineLearning.MultiSvmClassifier.MultiSvmClassifier
 
 
 -- | Softmax Classifier (Multiclass Logistic Regression).
