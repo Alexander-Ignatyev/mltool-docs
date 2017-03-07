@@ -22,6 +22,27 @@ type Vector = Vector R
 type Matrix = Matrix R
 
 
+-- | Regularization.
+module MachineLearning.Regularization
+
+-- | Regularization
+data Regularization
+
+-- | No regularization
+RegNone :: Regularization
+
+-- | L2 Regularization
+L2 :: R -> Regularization
+
+-- | Calculates regularization for Model.cost function. It takes
+--   regularization parameter and theta.
+costReg :: Regularization -> Vector -> R
+
+-- | Calculates regularization for Model.gradient function. It takes
+--   regularization parameter and theta.
+gradientReg :: Regularization -> Vector -> Vector
+
+
 -- | Regression Model type class.
 module MachineLearning.Model
 class Model a
@@ -31,13 +52,13 @@ class Model a
 hypothesis :: Model a => a -> Matrix -> Vector -> Vector
 
 -- | Cost function J(Theta), a.k.a. loss function. It takes regularizarion
---   parameter lambda, matrix X (m x n), vector y (m x 1) and vector theta
---   (n x 1).
-cost :: Model a => a -> R -> Matrix -> Vector -> Vector -> R
+--   parameter, matrix X (m x n), vector y (m x 1) and vector theta (n x
+--   1).
+cost :: Model a => a -> Regularization -> Matrix -> Vector -> Vector -> R
 
--- | Gradient function. It takes regularizarion parameter lambda, X (m x
---   n), y (m x 1) and theta (n x 1). Returns vector of gradients (n x 1).
-gradient :: Model a => a -> R -> Matrix -> Vector -> Vector -> Vector
+-- | Gradient function. It takes regularizarion parameter, X (m x n), y (m
+--   x 1) and theta (n x 1). Returns vector of gradients (n x 1).
+gradient :: Model a => a -> Regularization -> Matrix -> Vector -> Vector -> Vector
 
 
 module MachineLearning.LeastSquaresModel
@@ -62,7 +83,7 @@ module MachineLearning.Optimization.GradientDescent
 
 -- | Gradient Descent method implementation. See
 --   <a>MachineLearning.Regression</a> for usage details.
-gradientDescent :: Model a => R -> a -> R -> Int -> R -> Matrix -> Vector -> Vector -> (Vector, Matrix)
+gradientDescent :: Model a => R -> a -> R -> Int -> Regularization -> Matrix -> Vector -> Vector -> (Vector, Matrix)
 
 
 -- | Minibatch Gradient Descent
@@ -70,7 +91,7 @@ module MachineLearning.Optimization.MinibatchGradientDescent
 
 -- | Minibatch Gradient Descent method implementation. See
 --   <a>MachineLearning.Regression</a> for usage details.
-minibatchGradientDescent :: Model a => Int -> Int -> R -> a -> R -> Int -> R -> Matrix -> Vector -> Vector -> (Vector, Matrix)
+minibatchGradientDescent :: Model a => Int -> Int -> R -> a -> R -> Int -> Regularization -> Matrix -> Vector -> Vector -> (Vector, Matrix)
 
 
 -- | Optimization module.
@@ -97,14 +118,14 @@ BFGS2 :: R -> R -> MinimizeMethod
 
 -- | Returns solution vector (theta) and optimization path. Optimization
 --   path's row format: [iter number, cost function value, theta values...]
-minimize :: Model a => MinimizeMethod -> a -> R -> Int -> R -> Matrix -> Vector -> Vector -> (Vector, Matrix)
+minimize :: Model a => MinimizeMethod -> a -> R -> Int -> Regularization -> Matrix -> Vector -> Vector -> (Vector, Matrix)
 
 -- | Gradient checking function. Approximates the derivates of the Model's
 --   cost function and calculates derivatives using the Model's gradient
---   functions. Returns norn_2 between 2 derivatives. Takes model, lambda,
---   X, y, theta and epsilon (used to approximate derivatives, 1e-4 is a
---   good value).
-checkGradient :: Model a => a -> R -> Matrix -> Vector -> Vector -> R -> R
+--   functions. Returns norn_2 between 2 derivatives. Takes model,
+--   regularization, X, y, theta and epsilon (used to approximate
+--   derivatives, 1e-4 is a good value).
+checkGradient :: Model a => a -> Regularization -> Matrix -> Vector -> Vector -> R -> R
 
 
 module MachineLearning.Regression
@@ -115,13 +136,13 @@ class Model a
 hypothesis :: Model a => a -> Matrix -> Vector -> Vector
 
 -- | Cost function J(Theta), a.k.a. loss function. It takes regularizarion
---   parameter lambda, matrix X (m x n), vector y (m x 1) and vector theta
---   (n x 1).
-cost :: Model a => a -> R -> Matrix -> Vector -> Vector -> R
+--   parameter, matrix X (m x n), vector y (m x 1) and vector theta (n x
+--   1).
+cost :: Model a => a -> Regularization -> Matrix -> Vector -> Vector -> R
 
--- | Gradient function. It takes regularizarion parameter lambda, X (m x
---   n), y (m x 1) and theta (n x 1). Returns vector of gradients (n x 1).
-gradient :: Model a => a -> R -> Matrix -> Vector -> Vector -> Vector
+-- | Gradient function. It takes regularizarion parameter, X (m x n), y (m
+--   x 1) and theta (n x 1). Returns vector of gradients (n x 1).
+gradient :: Model a => a -> Regularization -> Matrix -> Vector -> Vector -> Vector
 data LeastSquaresModel
 LeastSquares :: LeastSquaresModel
 data MinimizeMethod
@@ -146,7 +167,7 @@ BFGS2 :: R -> R -> MinimizeMethod
 
 -- | Returns solution vector (theta) and optimization path. Optimization
 --   path's row format: [iter number, cost function value, theta values...]
-minimize :: Model a => MinimizeMethod -> a -> R -> Int -> R -> Matrix -> Vector -> Vector -> (Vector, Matrix)
+minimize :: Model a => MinimizeMethod -> a -> R -> Int -> Regularization -> Matrix -> Vector -> Vector -> (Vector, Matrix)
 
 -- | Normal equation using inverse, does not require feature normalization
 --   It takes X and y, returns theta.
@@ -156,41 +177,14 @@ normalEquation :: Matrix -> Vector -> Vector
 --   It takes X and y, returns theta.
 normalEquation_p :: Matrix -> Vector -> Vector
 
+-- | Regularization
+data Regularization
 
--- | MultiClass Classification.
-module MachineLearning.Classification.MultiClass
+-- | No regularization
+RegNone :: Regularization
 
--- | Classifier type class represents Multi-class classification models.
-class Classifier a
-
--- | Score function
-cscore :: Classifier a => a -> Matrix -> Matrix -> Matrix
-
--- | Hypothesis function Takes X (m x n) and theta (n x k), returns y (m x
---   k).
-chypothesis :: Classifier a => a -> Matrix -> Matrix -> Vector
-
--- | Cost function J(Theta), a.k.a. loss function. It takes regularizarion
---   parameter lambda, matrix X (m x n), vector y (m x 1) and vector theta
---   (n x 1).
-ccost :: Classifier a => a -> R -> Matrix -> Vector -> Matrix -> R
-
--- | Gradient function. It takes regularizarion parameter lambda, X (m x
---   n), y (m x 1) and theta (n x 1). Returns vector of gradients (n x 1).
-cgradient :: Classifier a => a -> R -> Matrix -> Vector -> Matrix -> Matrix
-
--- | Returns Number of Classes
-cnumClasses :: Classifier a => a -> Int
-
--- | MultiClassModel is Model wrapper class around Classifier
-data MultiClassModel m
-MultiClass :: m -> MultiClassModel m
-
--- | Process outputs for MultiClass Classification. Takes Classifier and
---   output vector y. Returns matrix of binary outputs. It is supposed that
---   labels are integerets start at 0.
-processOutput :: (Classifier c) => c -> Vector -> Matrix
-instance MachineLearning.Classification.MultiClass.Classifier a => MachineLearning.Model.Model (MachineLearning.Classification.MultiClass.MultiClassModel a)
+-- | L2 Regularization
+L2 :: R -> Regularization
 
 
 -- | Various helpful utilities.
@@ -233,13 +227,22 @@ BFGS2 :: R -> R -> MinimizeMethod
 predict :: Matrix -> Vector -> Vector
 
 -- | Learns Binary Classification.
-learn :: MinimizeMethod -> R -> Int -> R -> Matrix -> Vector -> Vector -> (Vector, Matrix)
+learn :: MinimizeMethod -> R -> Int -> Regularization -> Matrix -> Vector -> Vector -> (Vector, Matrix)
 
 -- | Calculates accuracy of Classification predictions. Takes vector
 --   expected y and vector predicted y. Returns number from 0 to 1, the
 --   closer to 1 the better accuracy. Suitable for both Classification
 --   Types: Binary and Multiclass.
 calcAccuracy :: Vector -> Vector -> R
+
+-- | Regularization
+data Regularization
+
+-- | No regularization
+RegNone :: Regularization
+
+-- | L2 Regularization
+L2 :: R -> Regularization
 
 
 -- | One-vs-All Classification.
@@ -270,7 +273,7 @@ BFGS2 :: R -> R -> MinimizeMethod
 predict :: Matrix -> [Vector] -> Vector
 
 -- | Learns One-vs-All Classification
-learn :: MinimizeMethod -> R -> Int -> R -> Int -> Matrix -> Vector -> [Vector] -> ([Vector], [Matrix])
+learn :: MinimizeMethod -> R -> Int -> Regularization -> Int -> Matrix -> Vector -> [Vector] -> ([Vector], [Matrix])
 
 -- | Calculates accuracy of Classification predictions. Takes vector
 --   expected y and vector predicted y. Returns number from 0 to 1, the
@@ -278,13 +281,14 @@ learn :: MinimizeMethod -> R -> Int -> R -> Int -> Matrix -> Vector -> [Vector] 
 --   Types: Binary and Multiclass.
 calcAccuracy :: Vector -> Vector -> R
 
-
--- | Regularization.
-module MachineLearning.NeuralNetwork.Regularization
+-- | Regularization
 data Regularization
-L2 :: Double -> Regularization
-forwardReg :: Regularization -> [(Matrix, Matrix)] -> R
-backwardReg :: Regularization -> Matrix -> Matrix
+
+-- | No regularization
+RegNone :: Regularization
+
+-- | L2 Regularization
+L2 :: R -> Regularization
 
 
 -- | Neural Network's Layer
@@ -307,6 +311,27 @@ affineForward :: Matrix -> Matrix -> Matrix -> Matrix
 affineBackward :: Matrix R -> Cache -> (Matrix R, Matrix, Matrix R)
 
 
+-- | Regularization.
+module MachineLearning.NeuralNetwork.Regularization
+
+-- | Regularization
+data Regularization
+
+-- | No regularization
+RegNone :: Regularization
+
+-- | L2 Regularization
+L2 :: R -> Regularization
+
+-- | Calcaulates regularization for forward propagation. It takes
+--   regularization parameter and theta list.
+forwardReg :: Regularization -> [(Matrix, Matrix)] -> R
+
+-- | Calculates regularization for step of backward propagation. It takes
+--   regularization parameter and theta.
+backwardReg :: Regularization -> Matrix -> Matrix
+
+
 -- | Neural Network's Topology
 module MachineLearning.NeuralNetwork.Topology
 
@@ -315,7 +340,7 @@ module MachineLearning.NeuralNetwork.Topology
 data Topology
 
 -- | Loss function's type. Takes x, weights and y.
-type LossFunc = Matrix -> [(Matrix, Matrix)] -> Matrix -> R
+type LossFunc = Matrix -> Matrix -> R
 
 -- | Makes Neural Network's Topology. Takes number of inputs, list of
 --   hidden layers, output layer and loss function.
@@ -364,13 +389,13 @@ class Model a
 hypothesis :: Model a => a -> Matrix -> Vector -> Vector
 
 -- | Cost function J(Theta), a.k.a. loss function. It takes regularizarion
---   parameter lambda, matrix X (m x n), vector y (m x 1) and vector theta
---   (n x 1).
-cost :: Model a => a -> R -> Matrix -> Vector -> Vector -> R
+--   parameter, matrix X (m x n), vector y (m x 1) and vector theta (n x
+--   1).
+cost :: Model a => a -> Regularization -> Matrix -> Vector -> Vector -> R
 
--- | Gradient function. It takes regularizarion parameter lambda, X (m x
---   n), y (m x 1) and theta (n x 1). Returns vector of gradients (n x 1).
-gradient :: Model a => a -> R -> Matrix -> Vector -> Vector -> Vector
+-- | Gradient function. It takes regularizarion parameter, X (m x n), y (m
+--   x 1) and theta (n x 1). Returns vector of gradients (n x 1).
+gradient :: Model a => a -> Regularization -> Matrix -> Vector -> Vector -> Vector
 
 -- | Neural Network Model. Takes neural network topology as a constructor
 --   argument.
@@ -399,6 +424,15 @@ initializeThetaIO :: Topology -> IO Vector
 -- | Create and initialize weights vector with random values for given
 --   neural network topology inside RandomMonad.
 initializeThetaM :: RandomGen g => Topology -> Rand g Vector
+
+-- | Regularization
+data Regularization
+
+-- | No regularization
+RegNone :: Regularization
+
+-- | L2 Regularization
+L2 :: R -> Regularization
 instance MachineLearning.Model.Model MachineLearning.NeuralNetwork.NeuralNetworkModel
 
 
@@ -414,28 +448,33 @@ tanh :: Floating a => a -> a
 gradient :: Matrix -> Matrix -> Matrix
 
 
+-- | Sigmoid Activation.
+module MachineLearning.NeuralNetwork.SigmoidActivation
+
+-- | Calculates sigmoid
+sigmoid :: Floating a => a -> a
+gradient :: Matrix -> Matrix -> Matrix
+
+
 -- | Multi SVM Loss.
 module MachineLearning.NeuralNetwork.MultiSvmLoss
 scores :: a -> a
 gradient :: Matrix -> Matrix -> Matrix
-loss :: Matrix -> [(Matrix, Matrix)] -> Matrix -> R
+loss :: Matrix -> Matrix -> R
 
 
 -- | Softmax Loss.
 module MachineLearning.NeuralNetwork.SoftmaxLoss
 scores :: Matrix R -> Matrix R
 gradient :: Matrix R -> Matrix R -> Matrix R
-loss :: Matrix -> [(Matrix, Matrix)] -> Matrix -> R
+loss :: Matrix -> Matrix -> R
 
 
--- | Sigmoid
-module MachineLearning.NeuralNetwork.Sigmoid
-
--- | Calculates sigmoid
-sigmoid :: Floating a => a -> a
+-- | Logistic Loss.
+module MachineLearning.NeuralNetwork.LogisticLoss
+scores :: Matrix -> Matrix
 gradient :: Matrix -> Matrix -> Matrix
-loss :: Matrix -> [(Matrix, Matrix)] -> Matrix -> R
-outputGradient :: Matrix -> Matrix -> Matrix
+loss :: Matrix -> Matrix -> R
 
 
 -- | Randon generation uitility functions.
@@ -486,7 +525,7 @@ ASigmoid :: Activation
 ARelu :: Activation
 ATanh :: Activation
 data Loss
-LSigmoid :: Loss
+LLogistic :: Loss
 LSoftmax :: Loss
 LMultiSvm :: Loss
 
@@ -547,6 +586,59 @@ mapFeatures :: Int -> Matrix -> Matrix
 
 -- | Splits data matrix to features matrix X and vector of outputs y
 splitToXY :: Element t => Matrix t -> (Matrix t, Vector t)
+
+
+-- | MultiClass Classification.
+module MachineLearning.Classification.MultiClass
+
+-- | Classifier type class represents Multi-class classification models.
+class Classifier a
+
+-- | Score function
+cscore :: Classifier a => a -> Matrix -> Matrix -> Matrix
+
+-- | Hypothesis function Takes X (m x n) and theta (n x k), returns y (m x
+--   k).
+chypothesis :: Classifier a => a -> Matrix -> Matrix -> Vector
+
+-- | Cost function J(Theta), a.k.a. loss function. It takes regularizarion
+--   parameter lambda, matrix X (m x n), vector y (m x 1) and vector theta
+--   (n x 1).
+ccost :: Classifier a => a -> Regularization -> Matrix -> Vector -> Matrix -> R
+
+-- | Gradient function. It takes regularizarion parameter lambda, X (m x
+--   n), y (m x 1) and theta (n x 1). Returns vector of gradients (n x 1).
+cgradient :: Classifier a => a -> Regularization -> Matrix -> Vector -> Matrix -> Matrix
+
+-- | Returns Number of Classes
+cnumClasses :: Classifier a => a -> Int
+
+-- | MultiClassModel is Model wrapper class around Classifier
+data MultiClassModel m
+MultiClass :: m -> MultiClassModel m
+
+-- | Process outputs for MultiClass Classification. Takes Classifier and
+--   output vector y. Returns matrix of binary outputs. It is supposed that
+--   labels are integerets start at 0.
+processOutput :: (Classifier c) => c -> Vector -> Matrix
+
+-- | Regularization
+data Regularization
+
+-- | No regularization
+RegNone :: Regularization
+
+-- | L2 Regularization
+L2 :: R -> Regularization
+
+-- | Calculates regularization for Classifier.ccost. It takes
+--   regularization parameter and theta.
+ccostReg :: Regularization -> Matrix -> R
+
+-- | Calculates regularization for Classifier.cgradient. It takes
+--   regularization parameter and theta.
+cgradientReg :: Regularization -> Matrix -> Matrix
+instance MachineLearning.Classification.MultiClass.Classifier a => MachineLearning.Model.Model (MachineLearning.Classification.MultiClass.MultiClassModel a)
 
 
 -- | Multicalss Support Vector Machines Classifier.
