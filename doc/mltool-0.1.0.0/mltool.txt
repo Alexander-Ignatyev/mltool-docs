@@ -302,10 +302,9 @@ Layer :: Int -> (Matrix -> Matrix -> Matrix -> Matrix) -> (Matrix -> Cache -> (M
 [lActivationGradient] :: Layer -> Matrix -> Matrix -> Matrix
 [lInitializeThetaM] :: Layer -> forall g. RandomGen g => (Int, Int) -> Rand g (Matrix, Matrix)
 data Cache
-Cache :: Matrix -> Matrix -> Matrix -> Matrix -> Cache
+Cache :: Matrix -> Matrix -> Matrix -> Cache
 [cacheZ] :: Cache -> Matrix
 [cacheX] :: Cache -> Matrix
-[cacheB] :: Cache -> Matrix
 [cacheW] :: Cache -> Matrix
 affineForward :: Matrix -> Matrix -> Matrix -> Matrix
 affineBackward :: Matrix R -> Cache -> (Matrix R, Matrix, Matrix R)
