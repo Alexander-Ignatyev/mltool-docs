@@ -13,157 +13,6 @@
 @package binary
 @version 0.8.3.0
 
-
--- | Efficient constructions of lazy bytestrings.
---   
---   This now re-exports <a>Builder</a>.
-module Data.Binary.Builder
-
--- | <a>Builder</a>s denote sequences of bytes. They are <a>Monoid</a>s
---   where <a>mempty</a> is the zero-length sequence and <a>mappend</a> is
---   concatenation, which runs in <i>O(1)</i>.
-data Builder :: *
-
--- | Execute a <a>Builder</a> and return the generated chunks as a lazy
---   <a>ByteString</a>. The work is performed lazy, i.e., only when a chunk
---   of the lazy <a>ByteString</a> is forced.
-toLazyByteString :: Builder -> ByteString
-
--- | <i>O(1).</i> The empty Builder, satisfying
---   
---   <ul>
---   <li><pre><a>toLazyByteString</a> <a>empty</a> =
---   <a>empty</a></pre></li>
---   </ul>
-empty :: Builder
-
--- | <i>O(1).</i> A Builder taking a single byte, satisfying
---   
---   <ul>
---   <li><pre><a>toLazyByteString</a> (<a>singleton</a> b) =
---   <a>singleton</a> b</pre></li>
---   </ul>
-singleton :: Word8 -> Builder
-
--- | <i>O(1).</i> The concatenation of two Builders, an associative
---   operation with identity <a>empty</a>, satisfying
---   
---   <ul>
---   <li><pre><a>toLazyByteString</a> (<a>append</a> x y) = <a>append</a>
---   (<a>toLazyByteString</a> x) (<a>toLazyByteString</a> y)</pre></li>
---   </ul>
-append :: Builder -> Builder -> Builder
-
--- | <i>O(1).</i> A Builder taking a <a>ByteString</a>, satisfying
---   
---   <ul>
---   <li><pre><a>toLazyByteString</a> (<a>fromByteString</a> bs) =
---   <a>fromChunks</a> [bs]</pre></li>
---   </ul>
-fromByteString :: ByteString -> Builder
-
--- | <i>O(1).</i> A Builder taking a lazy <a>ByteString</a>, satisfying
---   
---   <ul>
---   <li><pre><a>toLazyByteString</a> (<a>fromLazyByteString</a> bs) =
---   bs</pre></li>
---   </ul>
-fromLazyByteString :: ByteString -> Builder
-
--- | <i>O(n).</i> A builder taking <a>ShortByteString</a> and copy it to a
---   Builder, satisfying
---   
---   <ul>
---   <li>@<a>toLazyByteString</a> (<a>fromShortByteString</a> bs) =
---   <a>fromChunks</a> [<a>fromShort</a> bs]</li>
---   </ul>
-fromShortByteString :: ShortByteString -> Builder
-
--- | Flush the current buffer. This introduces a chunk boundary.
-flush :: Builder
-
--- | Write a Word16 in big endian format
-putWord16be :: Word16 -> Builder
-
--- | Write a Word32 in big endian format
-putWord32be :: Word32 -> Builder
-
--- | Write a Word64 in big endian format
-putWord64be :: Word64 -> Builder
-
--- | Write a Int16 in big endian format
-putInt16be :: Int16 -> Builder
-
--- | Write a Int32 in big endian format
-putInt32be :: Int32 -> Builder
-
--- | Write a Int64 in big endian format
-putInt64be :: Int64 -> Builder
-
--- | Write a Word16 in little endian format
-putWord16le :: Word16 -> Builder
-
--- | Write a Word32 in little endian format
-putWord32le :: Word32 -> Builder
-
--- | Write a Word64 in little endian format
-putWord64le :: Word64 -> Builder
-
--- | Write a Int16 in little endian format
-putInt16le :: Int16 -> Builder
-
--- | Write a Int32 in little endian format
-putInt32le :: Int32 -> Builder
-
--- | Write a Int64 in little endian format
-putInt64le :: Int64 -> Builder
-
--- | <i>O(1).</i> A Builder taking a single native machine word. The word
---   is written in host order, host endian form, for the machine you're on.
---   On a 64 bit machine the Word is an 8 byte value, on a 32 bit machine,
---   4 bytes. Values written this way are not portable to different endian
---   or word sized machines, without conversion.
-putWordhost :: Word -> Builder
-
--- | Write a Word16 in native host order and host endianness. 2 bytes will
---   be written, unaligned.
-putWord16host :: Word16 -> Builder
-
--- | Write a Word32 in native host order and host endianness. 4 bytes will
---   be written, unaligned.
-putWord32host :: Word32 -> Builder
-
--- | Write a Word64 in native host order. On a 32 bit machine we write two
---   host order Word32s, in big endian form. 8 bytes will be written,
---   unaligned.
-putWord64host :: Word64 -> Builder
-
--- | <i>O(1).</i> A Builder taking a single native machine word. The word
---   is written in host order, host endian form, for the machine you're on.
---   On a 64 bit machine the Int is an 8 byte value, on a 32 bit machine, 4
---   bytes. Values written this way are not portable to different endian or
---   word sized machines, without conversion.
-putInthost :: Int -> Builder
-
--- | Write a Int16 in native host order and host endianness. 2 bytes will
---   be written, unaligned.
-putInt16host :: Int16 -> Builder
-
--- | Write a Int32 in native host order and host endianness. 4 bytes will
---   be written, unaligned.
-putInt32host :: Int32 -> Builder
-
--- | Write a Int64 in native host order. On a 32 bit machine we write two
---   host order Int32s, in big endian form. 8 bytes will be written,
---   unaligned.
-putInt64host :: Int64 -> Builder
-
--- | Write a character using UTF-8 encoding.
-putCharUtf8 :: Char -> Builder
-
--- | Write a String using UTF-8 encoding.
-putStringUtf8 :: String -> Builder
-
 module Data.Binary.Get.Internal
 data Get a
 runCont :: Get a -> forall r. ByteString -> Success a r -> Decoder r
@@ -630,6 +479,157 @@ remaining :: Get Int64
 -- | <i>Deprecated: Use <a>getByteString</a> instead of
 --   <a>getBytes</a>.</i>
 getBytes :: Int -> Get ByteString
+
+
+-- | Efficient constructions of lazy bytestrings.
+--   
+--   This now re-exports <a>Builder</a>.
+module Data.Binary.Builder
+
+-- | <a>Builder</a>s denote sequences of bytes. They are <a>Monoid</a>s
+--   where <a>mempty</a> is the zero-length sequence and <a>mappend</a> is
+--   concatenation, which runs in <i>O(1)</i>.
+data Builder :: *
+
+-- | Execute a <a>Builder</a> and return the generated chunks as a lazy
+--   <a>ByteString</a>. The work is performed lazy, i.e., only when a chunk
+--   of the lazy <a>ByteString</a> is forced.
+toLazyByteString :: Builder -> ByteString
+
+-- | <i>O(1).</i> The empty Builder, satisfying
+--   
+--   <ul>
+--   <li><pre><a>toLazyByteString</a> <a>empty</a> =
+--   <a>empty</a></pre></li>
+--   </ul>
+empty :: Builder
+
+-- | <i>O(1).</i> A Builder taking a single byte, satisfying
+--   
+--   <ul>
+--   <li><pre><a>toLazyByteString</a> (<a>singleton</a> b) =
+--   <a>singleton</a> b</pre></li>
+--   </ul>
+singleton :: Word8 -> Builder
+
+-- | <i>O(1).</i> The concatenation of two Builders, an associative
+--   operation with identity <a>empty</a>, satisfying
+--   
+--   <ul>
+--   <li><pre><a>toLazyByteString</a> (<a>append</a> x y) = <a>append</a>
+--   (<a>toLazyByteString</a> x) (<a>toLazyByteString</a> y)</pre></li>
+--   </ul>
+append :: Builder -> Builder -> Builder
+
+-- | <i>O(1).</i> A Builder taking a <a>ByteString</a>, satisfying
+--   
+--   <ul>
+--   <li><pre><a>toLazyByteString</a> (<a>fromByteString</a> bs) =
+--   <a>fromChunks</a> [bs]</pre></li>
+--   </ul>
+fromByteString :: ByteString -> Builder
+
+-- | <i>O(1).</i> A Builder taking a lazy <a>ByteString</a>, satisfying
+--   
+--   <ul>
+--   <li><pre><a>toLazyByteString</a> (<a>fromLazyByteString</a> bs) =
+--   bs</pre></li>
+--   </ul>
+fromLazyByteString :: ByteString -> Builder
+
+-- | <i>O(n).</i> A builder taking <a>ShortByteString</a> and copy it to a
+--   Builder, satisfying
+--   
+--   <ul>
+--   <li>@<a>toLazyByteString</a> (<a>fromShortByteString</a> bs) =
+--   <a>fromChunks</a> [<a>fromShort</a> bs]</li>
+--   </ul>
+fromShortByteString :: ShortByteString -> Builder
+
+-- | Flush the current buffer. This introduces a chunk boundary.
+flush :: Builder
+
+-- | Write a Word16 in big endian format
+putWord16be :: Word16 -> Builder
+
+-- | Write a Word32 in big endian format
+putWord32be :: Word32 -> Builder
+
+-- | Write a Word64 in big endian format
+putWord64be :: Word64 -> Builder
+
+-- | Write a Int16 in big endian format
+putInt16be :: Int16 -> Builder
+
+-- | Write a Int32 in big endian format
+putInt32be :: Int32 -> Builder
+
+-- | Write a Int64 in big endian format
+putInt64be :: Int64 -> Builder
+
+-- | Write a Word16 in little endian format
+putWord16le :: Word16 -> Builder
+
+-- | Write a Word32 in little endian format
+putWord32le :: Word32 -> Builder
+
+-- | Write a Word64 in little endian format
+putWord64le :: Word64 -> Builder
+
+-- | Write a Int16 in little endian format
+putInt16le :: Int16 -> Builder
+
+-- | Write a Int32 in little endian format
+putInt32le :: Int32 -> Builder
+
+-- | Write a Int64 in little endian format
+putInt64le :: Int64 -> Builder
+
+-- | <i>O(1).</i> A Builder taking a single native machine word. The word
+--   is written in host order, host endian form, for the machine you're on.
+--   On a 64 bit machine the Word is an 8 byte value, on a 32 bit machine,
+--   4 bytes. Values written this way are not portable to different endian
+--   or word sized machines, without conversion.
+putWordhost :: Word -> Builder
+
+-- | Write a Word16 in native host order and host endianness. 2 bytes will
+--   be written, unaligned.
+putWord16host :: Word16 -> Builder
+
+-- | Write a Word32 in native host order and host endianness. 4 bytes will
+--   be written, unaligned.
+putWord32host :: Word32 -> Builder
+
+-- | Write a Word64 in native host order. On a 32 bit machine we write two
+--   host order Word32s, in big endian form. 8 bytes will be written,
+--   unaligned.
+putWord64host :: Word64 -> Builder
+
+-- | <i>O(1).</i> A Builder taking a single native machine word. The word
+--   is written in host order, host endian form, for the machine you're on.
+--   On a 64 bit machine the Int is an 8 byte value, on a 32 bit machine, 4
+--   bytes. Values written this way are not portable to different endian or
+--   word sized machines, without conversion.
+putInthost :: Int -> Builder
+
+-- | Write a Int16 in native host order and host endianness. 2 bytes will
+--   be written, unaligned.
+putInt16host :: Int16 -> Builder
+
+-- | Write a Int32 in native host order and host endianness. 4 bytes will
+--   be written, unaligned.
+putInt32host :: Int32 -> Builder
+
+-- | Write a Int64 in native host order. On a 32 bit machine we write two
+--   host order Int32s, in big endian form. 8 bytes will be written,
+--   unaligned.
+putInt64host :: Int64 -> Builder
+
+-- | Write a character using UTF-8 encoding.
+putCharUtf8 :: Char -> Builder
+
+-- | Write a String using UTF-8 encoding.
+putStringUtf8 :: String -> Builder
 
 
 -- | The Put monad. A monad for efficiently constructing lazy bytestrings.

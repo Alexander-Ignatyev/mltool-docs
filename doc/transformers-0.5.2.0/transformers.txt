@@ -279,6 +279,120 @@ type Listen w m a = m a -> m (a, w)
 type Pass w m a = m (a, w -> w) -> m a
 
 
+-- | This monad transformer adds the ability to fail or throw exceptions to
+--   a monad.
+--   
+--   A sequence of actions succeeds, producing a value, only if all the
+--   actions in the sequence are successful. If one fails with an error,
+--   the rest of the sequence is skipped and the composite action fails
+--   with that error.
+--   
+--   If the value of the error is not required, the variant in
+--   <a>Control.Monad.Trans.Maybe</a> may be used instead.
+--   
+--   <i>Note:</i> This module will be removed in a future release. Instead,
+--   use <a>Control.Monad.Trans.Except</a>, which does not restrict the
+--   exception type, and also includes a base exception monad.
+
+-- | <i>Deprecated: Use Control.Monad.Trans.Except instead</i>
+module Control.Monad.Trans.Error
+
+-- | An exception to be thrown.
+--   
+--   Minimal complete definition: <a>noMsg</a> or <a>strMsg</a>.
+class Error a where noMsg = strMsg "" strMsg _ = noMsg
+
+-- | Creates an exception without a message. The default implementation is
+--   <tt><a>strMsg</a> ""</tt>.
+noMsg :: Error a => a
+
+-- | Creates an exception with a message. The default implementation of
+--   <tt><a>strMsg</a> s</tt> is <a>noMsg</a>.
+strMsg :: Error a => String -> a
+
+-- | Workaround so that we can have a Haskell 98 instance <tt><a>Error</a>
+--   <a>String</a></tt>.
+class ErrorList a
+listMsg :: ErrorList a => String -> [a]
+
+-- | The error monad transformer. It can be used to add error handling to
+--   other monads.
+--   
+--   The <tt>ErrorT</tt> Monad structure is parameterized over two things:
+--   
+--   <ul>
+--   <li>e - The error type.</li>
+--   <li>m - The inner monad.</li>
+--   </ul>
+--   
+--   The <a>return</a> function yields a successful computation, while
+--   <tt>&gt;&gt;=</tt> sequences two subcomputations, failing on the first
+--   error.
+newtype ErrorT e m a
+ErrorT :: m (Either e a) -> ErrorT e m a
+[runErrorT] :: ErrorT e m a -> m (Either e a)
+
+-- | Map the unwrapped computation using the given function.
+--   
+--   <ul>
+--   <li><pre><a>runErrorT</a> (<a>mapErrorT</a> f m) = f (<a>runErrorT</a>
+--   m)</pre></li>
+--   </ul>
+mapErrorT :: (m (Either e a) -> n (Either e' b)) -> ErrorT e m a -> ErrorT e' n b
+
+-- | Signal an error value <tt>e</tt>.
+--   
+--   <ul>
+--   <li><pre><a>runErrorT</a> (<a>throwError</a> e) = <a>return</a>
+--   (<a>Left</a> e)</pre></li>
+--   <li><pre><a>throwError</a> e &gt;&gt;= m = <a>throwError</a>
+--   e</pre></li>
+--   </ul>
+throwError :: (Monad m) => e -> ErrorT e m a
+
+-- | Handle an error.
+--   
+--   <ul>
+--   <li><pre><a>catchError</a> h (<a>lift</a> m) = <a>lift</a>
+--   m</pre></li>
+--   <li><pre><a>catchError</a> h (<a>throwError</a> e) = h e</pre></li>
+--   </ul>
+catchError :: (Monad m) => ErrorT e m a -> (e -> ErrorT e m a) -> ErrorT e m a
+
+-- | Lift a <tt>callCC</tt> operation to the new monad.
+liftCallCC :: CallCC m (Either e a) (Either e b) -> CallCC (ErrorT e m) a b
+
+-- | Lift a <tt>listen</tt> operation to the new monad.
+liftListen :: (Monad m) => Listen w m (Either e a) -> Listen w (ErrorT e m) a
+
+-- | Lift a <tt>pass</tt> operation to the new monad.
+liftPass :: (Monad m) => Pass w m (Either e a) -> Pass w (ErrorT e m) a
+instance Control.Monad.Trans.Error.Error e => GHC.Base.Alternative (Data.Either.Either e)
+instance Control.Monad.Trans.Error.Error e => GHC.Base.MonadPlus (Data.Either.Either e)
+instance Control.Monad.Trans.Error.Error GHC.IO.Exception.IOException
+instance Control.Monad.Trans.Error.ErrorList a => Control.Monad.Trans.Error.Error [a]
+instance Control.Monad.Trans.Error.ErrorList GHC.Types.Char
+instance (GHC.Classes.Eq e, Data.Functor.Classes.Eq1 m) => Data.Functor.Classes.Eq1 (Control.Monad.Trans.Error.ErrorT e m)
+instance (GHC.Classes.Ord e, Data.Functor.Classes.Ord1 m) => Data.Functor.Classes.Ord1 (Control.Monad.Trans.Error.ErrorT e m)
+instance (GHC.Read.Read e, Data.Functor.Classes.Read1 m) => Data.Functor.Classes.Read1 (Control.Monad.Trans.Error.ErrorT e m)
+instance (GHC.Show.Show e, Data.Functor.Classes.Show1 m) => Data.Functor.Classes.Show1 (Control.Monad.Trans.Error.ErrorT e m)
+instance (GHC.Classes.Eq e, Data.Functor.Classes.Eq1 m, GHC.Classes.Eq a) => GHC.Classes.Eq (Control.Monad.Trans.Error.ErrorT e m a)
+instance (GHC.Classes.Ord e, Data.Functor.Classes.Ord1 m, GHC.Classes.Ord a) => GHC.Classes.Ord (Control.Monad.Trans.Error.ErrorT e m a)
+instance (GHC.Read.Read e, Data.Functor.Classes.Read1 m, GHC.Read.Read a) => GHC.Read.Read (Control.Monad.Trans.Error.ErrorT e m a)
+instance (GHC.Show.Show e, Data.Functor.Classes.Show1 m, GHC.Show.Show a) => GHC.Show.Show (Control.Monad.Trans.Error.ErrorT e m a)
+instance GHC.Base.Functor m => GHC.Base.Functor (Control.Monad.Trans.Error.ErrorT e m)
+instance Data.Foldable.Foldable f => Data.Foldable.Foldable (Control.Monad.Trans.Error.ErrorT e f)
+instance Data.Traversable.Traversable f => Data.Traversable.Traversable (Control.Monad.Trans.Error.ErrorT e f)
+instance (GHC.Base.Functor m, GHC.Base.Monad m) => GHC.Base.Applicative (Control.Monad.Trans.Error.ErrorT e m)
+instance (GHC.Base.Functor m, GHC.Base.Monad m, Control.Monad.Trans.Error.Error e) => GHC.Base.Alternative (Control.Monad.Trans.Error.ErrorT e m)
+instance (GHC.Base.Monad m, Control.Monad.Trans.Error.Error e) => GHC.Base.Monad (Control.Monad.Trans.Error.ErrorT e m)
+instance (GHC.Base.Monad m, Control.Monad.Trans.Error.Error e) => Control.Monad.Fail.MonadFail (Control.Monad.Trans.Error.ErrorT e m)
+instance (GHC.Base.Monad m, Control.Monad.Trans.Error.Error e) => GHC.Base.MonadPlus (Control.Monad.Trans.Error.ErrorT e m)
+instance (Control.Monad.Fix.MonadFix m, Control.Monad.Trans.Error.Error e) => Control.Monad.Fix.MonadFix (Control.Monad.Trans.Error.ErrorT e m)
+instance Control.Monad.Trans.Class.MonadTrans (Control.Monad.Trans.Error.ErrorT e)
+instance (Control.Monad.Trans.Error.Error e, Control.Monad.IO.Class.MonadIO m) => Control.Monad.IO.Class.MonadIO (Control.Monad.Trans.Error.ErrorT e m)
+
+
 -- | This monad transformer extends a monad with the ability throw
 --   exceptions.
 --   
@@ -396,120 +510,6 @@ instance Control.Monad.Fix.MonadFix m => Control.Monad.Fix.MonadFix (Control.Mon
 instance Control.Monad.Trans.Class.MonadTrans (Control.Monad.Trans.Except.ExceptT e)
 instance Control.Monad.IO.Class.MonadIO m => Control.Monad.IO.Class.MonadIO (Control.Monad.Trans.Except.ExceptT e m)
 instance Control.Monad.Zip.MonadZip m => Control.Monad.Zip.MonadZip (Control.Monad.Trans.Except.ExceptT e m)
-
-
--- | This monad transformer adds the ability to fail or throw exceptions to
---   a monad.
---   
---   A sequence of actions succeeds, producing a value, only if all the
---   actions in the sequence are successful. If one fails with an error,
---   the rest of the sequence is skipped and the composite action fails
---   with that error.
---   
---   If the value of the error is not required, the variant in
---   <a>Control.Monad.Trans.Maybe</a> may be used instead.
---   
---   <i>Note:</i> This module will be removed in a future release. Instead,
---   use <a>Control.Monad.Trans.Except</a>, which does not restrict the
---   exception type, and also includes a base exception monad.
-
--- | <i>Deprecated: Use Control.Monad.Trans.Except instead</i>
-module Control.Monad.Trans.Error
-
--- | An exception to be thrown.
---   
---   Minimal complete definition: <a>noMsg</a> or <a>strMsg</a>.
-class Error a where noMsg = strMsg "" strMsg _ = noMsg
-
--- | Creates an exception without a message. The default implementation is
---   <tt><a>strMsg</a> ""</tt>.
-noMsg :: Error a => a
-
--- | Creates an exception with a message. The default implementation of
---   <tt><a>strMsg</a> s</tt> is <a>noMsg</a>.
-strMsg :: Error a => String -> a
-
--- | Workaround so that we can have a Haskell 98 instance <tt><a>Error</a>
---   <a>String</a></tt>.
-class ErrorList a
-listMsg :: ErrorList a => String -> [a]
-
--- | The error monad transformer. It can be used to add error handling to
---   other monads.
---   
---   The <tt>ErrorT</tt> Monad structure is parameterized over two things:
---   
---   <ul>
---   <li>e - The error type.</li>
---   <li>m - The inner monad.</li>
---   </ul>
---   
---   The <a>return</a> function yields a successful computation, while
---   <tt>&gt;&gt;=</tt> sequences two subcomputations, failing on the first
---   error.
-newtype ErrorT e m a
-ErrorT :: m (Either e a) -> ErrorT e m a
-[runErrorT] :: ErrorT e m a -> m (Either e a)
-
--- | Map the unwrapped computation using the given function.
---   
---   <ul>
---   <li><pre><a>runErrorT</a> (<a>mapErrorT</a> f m) = f (<a>runErrorT</a>
---   m)</pre></li>
---   </ul>
-mapErrorT :: (m (Either e a) -> n (Either e' b)) -> ErrorT e m a -> ErrorT e' n b
-
--- | Signal an error value <tt>e</tt>.
---   
---   <ul>
---   <li><pre><a>runErrorT</a> (<a>throwError</a> e) = <a>return</a>
---   (<a>Left</a> e)</pre></li>
---   <li><pre><a>throwError</a> e &gt;&gt;= m = <a>throwError</a>
---   e</pre></li>
---   </ul>
-throwError :: (Monad m) => e -> ErrorT e m a
-
--- | Handle an error.
---   
---   <ul>
---   <li><pre><a>catchError</a> h (<a>lift</a> m) = <a>lift</a>
---   m</pre></li>
---   <li><pre><a>catchError</a> h (<a>throwError</a> e) = h e</pre></li>
---   </ul>
-catchError :: (Monad m) => ErrorT e m a -> (e -> ErrorT e m a) -> ErrorT e m a
-
--- | Lift a <tt>callCC</tt> operation to the new monad.
-liftCallCC :: CallCC m (Either e a) (Either e b) -> CallCC (ErrorT e m) a b
-
--- | Lift a <tt>listen</tt> operation to the new monad.
-liftListen :: (Monad m) => Listen w m (Either e a) -> Listen w (ErrorT e m) a
-
--- | Lift a <tt>pass</tt> operation to the new monad.
-liftPass :: (Monad m) => Pass w m (Either e a) -> Pass w (ErrorT e m) a
-instance Control.Monad.Trans.Error.Error e => GHC.Base.Alternative (Data.Either.Either e)
-instance Control.Monad.Trans.Error.Error e => GHC.Base.MonadPlus (Data.Either.Either e)
-instance Control.Monad.Trans.Error.Error GHC.IO.Exception.IOException
-instance Control.Monad.Trans.Error.ErrorList a => Control.Monad.Trans.Error.Error [a]
-instance Control.Monad.Trans.Error.ErrorList GHC.Types.Char
-instance (GHC.Classes.Eq e, Data.Functor.Classes.Eq1 m) => Data.Functor.Classes.Eq1 (Control.Monad.Trans.Error.ErrorT e m)
-instance (GHC.Classes.Ord e, Data.Functor.Classes.Ord1 m) => Data.Functor.Classes.Ord1 (Control.Monad.Trans.Error.ErrorT e m)
-instance (GHC.Read.Read e, Data.Functor.Classes.Read1 m) => Data.Functor.Classes.Read1 (Control.Monad.Trans.Error.ErrorT e m)
-instance (GHC.Show.Show e, Data.Functor.Classes.Show1 m) => Data.Functor.Classes.Show1 (Control.Monad.Trans.Error.ErrorT e m)
-instance (GHC.Classes.Eq e, Data.Functor.Classes.Eq1 m, GHC.Classes.Eq a) => GHC.Classes.Eq (Control.Monad.Trans.Error.ErrorT e m a)
-instance (GHC.Classes.Ord e, Data.Functor.Classes.Ord1 m, GHC.Classes.Ord a) => GHC.Classes.Ord (Control.Monad.Trans.Error.ErrorT e m a)
-instance (GHC.Read.Read e, Data.Functor.Classes.Read1 m, GHC.Read.Read a) => GHC.Read.Read (Control.Monad.Trans.Error.ErrorT e m a)
-instance (GHC.Show.Show e, Data.Functor.Classes.Show1 m, GHC.Show.Show a) => GHC.Show.Show (Control.Monad.Trans.Error.ErrorT e m a)
-instance GHC.Base.Functor m => GHC.Base.Functor (Control.Monad.Trans.Error.ErrorT e m)
-instance Data.Foldable.Foldable f => Data.Foldable.Foldable (Control.Monad.Trans.Error.ErrorT e f)
-instance Data.Traversable.Traversable f => Data.Traversable.Traversable (Control.Monad.Trans.Error.ErrorT e f)
-instance (GHC.Base.Functor m, GHC.Base.Monad m) => GHC.Base.Applicative (Control.Monad.Trans.Error.ErrorT e m)
-instance (GHC.Base.Functor m, GHC.Base.Monad m, Control.Monad.Trans.Error.Error e) => GHC.Base.Alternative (Control.Monad.Trans.Error.ErrorT e m)
-instance (GHC.Base.Monad m, Control.Monad.Trans.Error.Error e) => GHC.Base.Monad (Control.Monad.Trans.Error.ErrorT e m)
-instance (GHC.Base.Monad m, Control.Monad.Trans.Error.Error e) => Control.Monad.Fail.MonadFail (Control.Monad.Trans.Error.ErrorT e m)
-instance (GHC.Base.Monad m, Control.Monad.Trans.Error.Error e) => GHC.Base.MonadPlus (Control.Monad.Trans.Error.ErrorT e m)
-instance (Control.Monad.Fix.MonadFix m, Control.Monad.Trans.Error.Error e) => Control.Monad.Fix.MonadFix (Control.Monad.Trans.Error.ErrorT e m)
-instance Control.Monad.Trans.Class.MonadTrans (Control.Monad.Trans.Error.ErrorT e)
-instance (Control.Monad.Trans.Error.Error e, Control.Monad.IO.Class.MonadIO m) => Control.Monad.IO.Class.MonadIO (Control.Monad.Trans.Error.ErrorT e m)
 
 
 -- | The identity monad transformer.
@@ -669,110 +669,6 @@ instance Control.Monad.Fix.MonadFix m => Control.Monad.Fix.MonadFix (Control.Mon
 instance Control.Monad.Trans.Class.MonadTrans Control.Monad.Trans.Maybe.MaybeT
 instance Control.Monad.IO.Class.MonadIO m => Control.Monad.IO.Class.MonadIO (Control.Monad.Trans.Maybe.MaybeT m)
 instance Control.Monad.Zip.MonadZip m => Control.Monad.Zip.MonadZip (Control.Monad.Trans.Maybe.MaybeT m)
-
-
--- | Declaration of the <a>ReaderT</a> monad transformer, which adds a
---   static environment to a given monad.
---   
---   If the computation is to modify the stored information, use
---   <a>Control.Monad.Trans.State</a> instead.
-module Control.Monad.Trans.Reader
-
--- | The parameterizable reader monad.
---   
---   Computations are functions of a shared environment.
---   
---   The <a>return</a> function ignores the environment, while
---   <tt>&gt;&gt;=</tt> passes the inherited environment to both
---   subcomputations.
-type Reader r = ReaderT r Identity
-
--- | Constructor for computations in the reader monad (equivalent to
---   <a>asks</a>).
-reader :: (Monad m) => (r -> a) -> ReaderT r m a
-
--- | Runs a <tt>Reader</tt> and extracts the final value from it. (The
---   inverse of <a>reader</a>.)
-runReader :: Reader r a -> r -> a
-
--- | Transform the value returned by a <tt>Reader</tt>.
---   
---   <ul>
---   <li><pre><a>runReader</a> (<a>mapReader</a> f m) = f .
---   <a>runReader</a> m</pre></li>
---   </ul>
-mapReader :: (a -> b) -> Reader r a -> Reader r b
-
--- | Execute a computation in a modified environment (a specialization of
---   <a>withReaderT</a>).
---   
---   <ul>
---   <li><pre><a>runReader</a> (<a>withReader</a> f m) = <a>runReader</a> m
---   . f</pre></li>
---   </ul>
-withReader :: (r' -> r) -> Reader r a -> Reader r' a
-
--- | The reader monad transformer, which adds a read-only environment to
---   the given monad.
---   
---   The <a>return</a> function ignores the environment, while
---   <tt>&gt;&gt;=</tt> passes the inherited environment to both
---   subcomputations.
-newtype ReaderT r m a
-ReaderT :: (r -> m a) -> ReaderT r m a
-[runReaderT] :: ReaderT r m a -> r -> m a
-
--- | Transform the computation inside a <tt>ReaderT</tt>.
---   
---   <ul>
---   <li><pre><a>runReaderT</a> (<a>mapReaderT</a> f m) = f .
---   <a>runReaderT</a> m</pre></li>
---   </ul>
-mapReaderT :: (m a -> n b) -> ReaderT r m a -> ReaderT r n b
-
--- | Execute a computation in a modified environment (a more general
---   version of <a>local</a>).
---   
---   <ul>
---   <li><pre><a>runReaderT</a> (<a>withReaderT</a> f m) =
---   <a>runReaderT</a> m . f</pre></li>
---   </ul>
-withReaderT :: (r' -> r) -> ReaderT r m a -> ReaderT r' m a
-
--- | Fetch the value of the environment.
-ask :: (Monad m) => ReaderT r m r
-
--- | Execute a computation in a modified environment (a specialization of
---   <a>withReaderT</a>).
---   
---   <ul>
---   <li><pre><a>runReaderT</a> (<a>local</a> f m) = <a>runReaderT</a> m .
---   f</pre></li>
---   </ul>
-local :: (r -> r) -> ReaderT r m a -> ReaderT r m a
-
--- | Retrieve a function of the current environment.
---   
---   <ul>
---   <li><pre><a>asks</a> f = <a>liftM</a> f <a>ask</a></pre></li>
---   </ul>
-asks :: (Monad m) => (r -> a) -> ReaderT r m a
-
--- | Lift a <tt>callCC</tt> operation to the new monad.
-liftCallCC :: CallCC m a b -> CallCC (ReaderT r m) a b
-
--- | Lift a <tt>catchE</tt> operation to the new monad.
-liftCatch :: Catch e m a -> Catch e (ReaderT r m) a
-instance GHC.Base.Functor m => GHC.Base.Functor (Control.Monad.Trans.Reader.ReaderT r m)
-instance GHC.Base.Applicative m => GHC.Base.Applicative (Control.Monad.Trans.Reader.ReaderT r m)
-instance GHC.Base.Alternative m => GHC.Base.Alternative (Control.Monad.Trans.Reader.ReaderT r m)
-instance GHC.Base.Monad m => GHC.Base.Monad (Control.Monad.Trans.Reader.ReaderT r m)
-instance Control.Monad.Fail.MonadFail m => Control.Monad.Fail.MonadFail (Control.Monad.Trans.Reader.ReaderT r m)
-instance GHC.Base.MonadPlus m => GHC.Base.MonadPlus (Control.Monad.Trans.Reader.ReaderT r m)
-instance Control.Monad.Fix.MonadFix m => Control.Monad.Fix.MonadFix (Control.Monad.Trans.Reader.ReaderT r m)
-instance Control.Monad.Trans.Class.MonadTrans (Control.Monad.Trans.Reader.ReaderT r)
-instance Control.Monad.IO.Class.MonadIO m => Control.Monad.IO.Class.MonadIO (Control.Monad.Trans.Reader.ReaderT r m)
-instance Control.Monad.Zip.MonadZip m => Control.Monad.Zip.MonadZip (Control.Monad.Trans.Reader.ReaderT r m)
 
 
 -- | A monad transformer that combines <tt>ReaderT</tt>, <tt>WriterT</tt>
@@ -1165,6 +1061,110 @@ instance (GHC.Base.Monoid w, GHC.Base.MonadPlus m) => GHC.Base.MonadPlus (Contro
 instance (GHC.Base.Monoid w, Control.Monad.Fix.MonadFix m) => Control.Monad.Fix.MonadFix (Control.Monad.Trans.RWS.Strict.RWST r w s m)
 instance GHC.Base.Monoid w => Control.Monad.Trans.Class.MonadTrans (Control.Monad.Trans.RWS.Strict.RWST r w s)
 instance (GHC.Base.Monoid w, Control.Monad.IO.Class.MonadIO m) => Control.Monad.IO.Class.MonadIO (Control.Monad.Trans.RWS.Strict.RWST r w s m)
+
+
+-- | Declaration of the <a>ReaderT</a> monad transformer, which adds a
+--   static environment to a given monad.
+--   
+--   If the computation is to modify the stored information, use
+--   <a>Control.Monad.Trans.State</a> instead.
+module Control.Monad.Trans.Reader
+
+-- | The parameterizable reader monad.
+--   
+--   Computations are functions of a shared environment.
+--   
+--   The <a>return</a> function ignores the environment, while
+--   <tt>&gt;&gt;=</tt> passes the inherited environment to both
+--   subcomputations.
+type Reader r = ReaderT r Identity
+
+-- | Constructor for computations in the reader monad (equivalent to
+--   <a>asks</a>).
+reader :: (Monad m) => (r -> a) -> ReaderT r m a
+
+-- | Runs a <tt>Reader</tt> and extracts the final value from it. (The
+--   inverse of <a>reader</a>.)
+runReader :: Reader r a -> r -> a
+
+-- | Transform the value returned by a <tt>Reader</tt>.
+--   
+--   <ul>
+--   <li><pre><a>runReader</a> (<a>mapReader</a> f m) = f .
+--   <a>runReader</a> m</pre></li>
+--   </ul>
+mapReader :: (a -> b) -> Reader r a -> Reader r b
+
+-- | Execute a computation in a modified environment (a specialization of
+--   <a>withReaderT</a>).
+--   
+--   <ul>
+--   <li><pre><a>runReader</a> (<a>withReader</a> f m) = <a>runReader</a> m
+--   . f</pre></li>
+--   </ul>
+withReader :: (r' -> r) -> Reader r a -> Reader r' a
+
+-- | The reader monad transformer, which adds a read-only environment to
+--   the given monad.
+--   
+--   The <a>return</a> function ignores the environment, while
+--   <tt>&gt;&gt;=</tt> passes the inherited environment to both
+--   subcomputations.
+newtype ReaderT r m a
+ReaderT :: (r -> m a) -> ReaderT r m a
+[runReaderT] :: ReaderT r m a -> r -> m a
+
+-- | Transform the computation inside a <tt>ReaderT</tt>.
+--   
+--   <ul>
+--   <li><pre><a>runReaderT</a> (<a>mapReaderT</a> f m) = f .
+--   <a>runReaderT</a> m</pre></li>
+--   </ul>
+mapReaderT :: (m a -> n b) -> ReaderT r m a -> ReaderT r n b
+
+-- | Execute a computation in a modified environment (a more general
+--   version of <a>local</a>).
+--   
+--   <ul>
+--   <li><pre><a>runReaderT</a> (<a>withReaderT</a> f m) =
+--   <a>runReaderT</a> m . f</pre></li>
+--   </ul>
+withReaderT :: (r' -> r) -> ReaderT r m a -> ReaderT r' m a
+
+-- | Fetch the value of the environment.
+ask :: (Monad m) => ReaderT r m r
+
+-- | Execute a computation in a modified environment (a specialization of
+--   <a>withReaderT</a>).
+--   
+--   <ul>
+--   <li><pre><a>runReaderT</a> (<a>local</a> f m) = <a>runReaderT</a> m .
+--   f</pre></li>
+--   </ul>
+local :: (r -> r) -> ReaderT r m a -> ReaderT r m a
+
+-- | Retrieve a function of the current environment.
+--   
+--   <ul>
+--   <li><pre><a>asks</a> f = <a>liftM</a> f <a>ask</a></pre></li>
+--   </ul>
+asks :: (Monad m) => (r -> a) -> ReaderT r m a
+
+-- | Lift a <tt>callCC</tt> operation to the new monad.
+liftCallCC :: CallCC m a b -> CallCC (ReaderT r m) a b
+
+-- | Lift a <tt>catchE</tt> operation to the new monad.
+liftCatch :: Catch e m a -> Catch e (ReaderT r m) a
+instance GHC.Base.Functor m => GHC.Base.Functor (Control.Monad.Trans.Reader.ReaderT r m)
+instance GHC.Base.Applicative m => GHC.Base.Applicative (Control.Monad.Trans.Reader.ReaderT r m)
+instance GHC.Base.Alternative m => GHC.Base.Alternative (Control.Monad.Trans.Reader.ReaderT r m)
+instance GHC.Base.Monad m => GHC.Base.Monad (Control.Monad.Trans.Reader.ReaderT r m)
+instance Control.Monad.Fail.MonadFail m => Control.Monad.Fail.MonadFail (Control.Monad.Trans.Reader.ReaderT r m)
+instance GHC.Base.MonadPlus m => GHC.Base.MonadPlus (Control.Monad.Trans.Reader.ReaderT r m)
+instance Control.Monad.Fix.MonadFix m => Control.Monad.Fix.MonadFix (Control.Monad.Trans.Reader.ReaderT r m)
+instance Control.Monad.Trans.Class.MonadTrans (Control.Monad.Trans.Reader.ReaderT r)
+instance Control.Monad.IO.Class.MonadIO m => Control.Monad.IO.Class.MonadIO (Control.Monad.Trans.Reader.ReaderT r m)
+instance Control.Monad.Zip.MonadZip m => Control.Monad.Zip.MonadZip (Control.Monad.Trans.Reader.ReaderT r m)
 
 
 -- | Lazy state monads, passing an updatable state through a computation.

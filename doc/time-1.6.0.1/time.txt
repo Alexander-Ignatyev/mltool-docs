@@ -8,27 +8,81 @@
 @package time
 @version 1.6.0.1
 
+module Data.Time.Calendar.MonthDay
 
--- | POSIX time, if you need to deal with timestamps and the like. Most
---   people won't need this module.
-module Data.Time.Clock.POSIX
+-- | convert month and day in the Gregorian or Julian calendars to day of
+--   year. First arg is leap year flag
+monthAndDayToDayOfYear :: Bool -> Int -> Int -> Int
 
--- | 86400 nominal seconds in every day
-posixDayLength :: NominalDiffTime
+-- | convert month and day in the Gregorian or Julian calendars to day of
+--   year. First arg is leap year flag
+monthAndDayToDayOfYearValid :: Bool -> Int -> Int -> Maybe Int
 
--- | POSIX time is the nominal time since 1970-01-01 00:00 UTC
---   
---   To convert from a <a>CTime</a> or <a>EpochTime</a>, use
---   <a>realToFrac</a>.
-type POSIXTime = NominalDiffTime
-posixSecondsToUTCTime :: POSIXTime -> UTCTime
-utcTimeToPOSIXSeconds :: UTCTime -> POSIXTime
+-- | convert day of year in the Gregorian or Julian calendars to month and
+--   day. First arg is leap year flag
+dayOfYearToMonthAndDay :: Bool -> Int -> (Int, Int)
 
--- | Get the current POSIX time from the system clock.
-getPOSIXTime :: IO POSIXTime
+-- | the length of a given month in the Gregorian or Julian calendars.
+--   First arg is leap year flag
+monthLength :: Bool -> Int -> Int
 
--- | Get the current UTC time from the system clock.
-getCurrentTime :: IO UTCTime
+module Data.Time.Calendar.Julian
+
+-- | convert to proleptic Julian year and day format. First element of
+--   result is year (proleptic Julian calendar), second is the day of the
+--   year, with 1 for Jan 1, and 365 (or 366 in leap years) for Dec 31.
+toJulianYearAndDay :: Day -> (Integer, Int)
+
+-- | convert from proleptic Julian year and day format. Invalid day numbers
+--   will be clipped to the correct range (1 to 365 or 366).
+fromJulianYearAndDay :: Integer -> Int -> Day
+
+-- | convert from proleptic Julian year and day format. Invalid day numbers
+--   will return Nothing
+fromJulianYearAndDayValid :: Integer -> Int -> Maybe Day
+
+-- | show in proleptic Julian year and day format (yyyy-ddd)
+showJulianYearAndDay :: Day -> String
+
+-- | Is this year a leap year according to the proleptic Julian calendar?
+isJulianLeapYear :: Integer -> Bool
+
+-- | convert to proleptic Julian calendar. First element of result is year,
+--   second month number (1-12), third day (1-31).
+toJulian :: Day -> (Integer, Int, Int)
+
+-- | convert from proleptic Julian calendar. First argument is year, second
+--   month number (1-12), third day (1-31). Invalid values will be clipped
+--   to the correct range, month first, then day.
+fromJulian :: Integer -> Int -> Int -> Day
+
+-- | convert from proleptic Julian calendar. First argument is year, second
+--   month number (1-12), third day (1-31). Invalid values will return
+--   Nothing.
+fromJulianValid :: Integer -> Int -> Int -> Maybe Day
+
+-- | show in ISO 8601 format (yyyy-mm-dd)
+showJulian :: Day -> String
+
+-- | The number of days in a given month according to the proleptic Julian
+--   calendar. First argument is year, second is month.
+julianMonthLength :: Integer -> Int -> Int
+
+-- | Add months, with days past the last day of the month clipped to the
+--   last day. For instance, 2005-01-30 + 1 month = 2005-02-28.
+addJulianMonthsClip :: Integer -> Day -> Day
+
+-- | Add months, with days past the last day of the month rolling over to
+--   the next month. For instance, 2005-01-30 + 1 month = 2005-03-02.
+addJulianMonthsRollOver :: Integer -> Day -> Day
+
+-- | Add years, matching month and day, with Feb 29th clipped to Feb 28th
+--   if necessary. For instance, 2004-02-29 + 2 years = 2006-02-28.
+addJulianYearsClip :: Integer -> Day -> Day
+
+-- | Add years, matching month and day, with Feb 29th rolled over to Mar
+--   1st if necessary. For instance, 2004-02-29 + 2 years = 2006-03-01.
+addJulianYearsRollOver :: Integer -> Day -> Day
 
 
 -- | ISO 8601 Ordinal Date format
@@ -106,81 +160,27 @@ fromWeekDateValid :: Integer -> Int -> Int -> Maybe Day
 -- | show in ISO 8601 Week Date format as yyyy-Www-d (e.g. "2006-W46-3").
 showWeekDate :: Day -> String
 
-module Data.Time.Calendar.MonthDay
 
--- | convert month and day in the Gregorian or Julian calendars to day of
---   year. First arg is leap year flag
-monthAndDayToDayOfYear :: Bool -> Int -> Int -> Int
+-- | POSIX time, if you need to deal with timestamps and the like. Most
+--   people won't need this module.
+module Data.Time.Clock.POSIX
 
--- | convert month and day in the Gregorian or Julian calendars to day of
---   year. First arg is leap year flag
-monthAndDayToDayOfYearValid :: Bool -> Int -> Int -> Maybe Int
+-- | 86400 nominal seconds in every day
+posixDayLength :: NominalDiffTime
 
--- | convert day of year in the Gregorian or Julian calendars to month and
---   day. First arg is leap year flag
-dayOfYearToMonthAndDay :: Bool -> Int -> (Int, Int)
+-- | POSIX time is the nominal time since 1970-01-01 00:00 UTC
+--   
+--   To convert from a <a>CTime</a> or <a>EpochTime</a>, use
+--   <a>realToFrac</a>.
+type POSIXTime = NominalDiffTime
+posixSecondsToUTCTime :: POSIXTime -> UTCTime
+utcTimeToPOSIXSeconds :: UTCTime -> POSIXTime
 
--- | the length of a given month in the Gregorian or Julian calendars.
---   First arg is leap year flag
-monthLength :: Bool -> Int -> Int
+-- | Get the current POSIX time from the system clock.
+getPOSIXTime :: IO POSIXTime
 
-module Data.Time.Calendar.Julian
-
--- | convert to proleptic Julian year and day format. First element of
---   result is year (proleptic Julian calendar), second is the day of the
---   year, with 1 for Jan 1, and 365 (or 366 in leap years) for Dec 31.
-toJulianYearAndDay :: Day -> (Integer, Int)
-
--- | convert from proleptic Julian year and day format. Invalid day numbers
---   will be clipped to the correct range (1 to 365 or 366).
-fromJulianYearAndDay :: Integer -> Int -> Day
-
--- | convert from proleptic Julian year and day format. Invalid day numbers
---   will return Nothing
-fromJulianYearAndDayValid :: Integer -> Int -> Maybe Day
-
--- | show in proleptic Julian year and day format (yyyy-ddd)
-showJulianYearAndDay :: Day -> String
-
--- | Is this year a leap year according to the proleptic Julian calendar?
-isJulianLeapYear :: Integer -> Bool
-
--- | convert to proleptic Julian calendar. First element of result is year,
---   second month number (1-12), third day (1-31).
-toJulian :: Day -> (Integer, Int, Int)
-
--- | convert from proleptic Julian calendar. First argument is year, second
---   month number (1-12), third day (1-31). Invalid values will be clipped
---   to the correct range, month first, then day.
-fromJulian :: Integer -> Int -> Int -> Day
-
--- | convert from proleptic Julian calendar. First argument is year, second
---   month number (1-12), third day (1-31). Invalid values will return
---   Nothing.
-fromJulianValid :: Integer -> Int -> Int -> Maybe Day
-
--- | show in ISO 8601 format (yyyy-mm-dd)
-showJulian :: Day -> String
-
--- | The number of days in a given month according to the proleptic Julian
---   calendar. First argument is year, second is month.
-julianMonthLength :: Integer -> Int -> Int
-
--- | Add months, with days past the last day of the month clipped to the
---   last day. For instance, 2005-01-30 + 1 month = 2005-02-28.
-addJulianMonthsClip :: Integer -> Day -> Day
-
--- | Add months, with days past the last day of the month rolling over to
---   the next month. For instance, 2005-01-30 + 1 month = 2005-03-02.
-addJulianMonthsRollOver :: Integer -> Day -> Day
-
--- | Add years, matching month and day, with Feb 29th clipped to Feb 28th
---   if necessary. For instance, 2004-02-29 + 2 years = 2006-02-28.
-addJulianYearsClip :: Integer -> Day -> Day
-
--- | Add years, matching month and day, with Feb 29th rolled over to Mar
---   1st if necessary. For instance, 2004-02-29 + 2 years = 2006-03-01.
-addJulianYearsRollOver :: Integer -> Day -> Day
+-- | Get the current UTC time from the system clock.
+getCurrentTime :: IO UTCTime
 
 module Data.Time.Format
 type NumericPadOption = Maybe Char
